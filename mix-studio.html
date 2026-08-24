@@ -1,0 +1,4065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>MIX Studio</title>
+
+<style>
+:root{
+--bg:#080a0f;
+--panel:#11151d;
+--panel2:#171d28;
+--border:#293243;
+--text:#edf3ff;
+--muted:#7d899e;
+--cyan:#00eaff;
+--purple:#a970ff;
+--pink:#ff5ca8;
+--yellow:#ffe66d;
+--green:#52f28a;
+--orange:#ff9c45;
+--red:#ff5260;
+--blue:#5da9ff;
+}
+
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+-webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+width:100%;
+height:100%;
+overflow:hidden;
+}
+
+body{
+background:
+radial-gradient(circle at 10% 0%,#17243d 0,transparent 35%),
+radial-gradient(circle at 100% 100%,#24143b 0,transparent 40%),
+var(--bg);
+color:var(--text);
+font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+}
+
+button{
+font-family:inherit;
+}
+
+.app{
+height:100dvh;
+display:flex;
+flex-direction:column;
+}
+
+.topbar{
+height:56px;
+min-height:56px;
+display:flex;
+align-items:center;
+gap:7px;
+padding:7px 9px;
+background:rgba(10,13,19,.88);
+backdrop-filter:blur(18px);
+border-bottom:1px solid var(--border);
+z-index:100;
+}
+
+.logo{
+display:flex;
+align-items:center;
+gap:7px;
+font-weight:950;
+letter-spacing:2px;
+color:var(--cyan);
+text-shadow:0 0 20px #00eaff55;
+white-space:nowrap;
+}
+
+.logo-dot{
+width:8px;
+height:8px;
+border-radius:50%;
+background:var(--green);
+box-shadow:0 0 14px var(--green);
+animation:pulse 1.6s infinite;
+}
+
+@keyframes pulse{
+50%{
+transform:scale(.65);
+opacity:.5;
+}
+}
+
+.icon-btn,
+.action-btn{
+border:1px solid var(--border);
+background:linear-gradient(180deg,#1b222d,#11151d);
+color:var(--text);
+border-radius:9px;
+min-height:34px;
+padding:7px 10px;
+cursor:pointer;
+font-size:11px;
+font-weight:800;
+transition:.16s;
+}
+
+.icon-btn{
+width:36px;
+padding:0;
+font-size:18px;
+}
+
+.icon-btn:active,
+.action-btn:active{
+transform:scale(.93);
+}
+
+.top-actions{
+margin-left:auto;
+display:flex;
+gap:5px;
+align-items:center;
+}
+
+.save{
+background:linear-gradient(135deg,#6845ff,#a970ff);
+border:0;
+}
+
+.preview{
+background:linear-gradient(135deg,#00bd68,#52f28a);
+color:#06120a;
+border:0;
+box-shadow:0 0 20px #52f28a25;
+}
+
+.workspace{
+flex:1;
+min-height:0;
+display:flex;
+position:relative;
+overflow:hidden;
+}
+
+.sidebar{
+width:205px;
+flex-shrink:0;
+background:rgba(13,17,24,.96);
+border-right:1px solid var(--border);
+padding:11px 9px;
+z-index:80;
+overflow:auto;
+}
+
+.explorer-title{
+font-size:9px;
+letter-spacing:1.7px;
+color:var(--muted);
+padding:5px 8px 10px;
+}
+
+.project{
+font-size:10px;
+font-weight:900;
+color:var(--purple);
+padding:7px 8px;
+}
+
+.file{
+display:flex;
+align-items:center;
+gap:7px;
+width:100%;
+border:0;
+background:transparent;
+color:var(--text);
+padding:10px;
+border-radius:8px;
+text-align:left;
+cursor:pointer;
+font-size:11px;
+transition:.15s;
+}
+
+.file:hover,
+.file.active{
+background:#1b2330;
+color:var(--cyan);
+}
+
+@media(max-width:700px){
+.sidebar{
+position:absolute;
+left:0;
+top:0;
+bottom:0;
+transform:translateX(-105%);
+transition:transform .28s cubic-bezier(.2,.8,.2,1);
+box-shadow:20px 0 60px #000b;
+}
+
+.sidebar.open{
+transform:translateX(0);
+}
+}
+
+.editor-area{
+flex:1;
+min-width:0;
+min-height:0;
+display:flex;
+flex-direction:column;
+}
+
+.tabbar{
+height:37px;
+min-height:37px;
+display:flex;
+align-items:flex-end;
+background:#0d1118;
+border-bottom:1px solid var(--border);
+}
+
+.tab{
+height:32px;
+padding:0 14px;
+display:flex;
+align-items:center;
+gap:7px;
+background:#11161f;
+border:1px solid var(--border);
+border-bottom:0;
+border-radius:8px 8px 0 0;
+font:11px monospace;
+}
+
+.tab-dot{
+color:var(--cyan);
+}
+
+.editor{
+position:relative;
+flex:1;
+min-height:0;
+overflow:hidden;
+background:#090c12;
+}
+
+.code-wrap{
+position:absolute;
+inset:0;
+overflow:hidden;
+}
+
+#highlight{
+position:absolute;
+inset:0;
+padding:17px 17px 80px 48px;
+font:14px/1.8 "SFMono-Regular",Consolas,monospace;
+white-space:pre;
+overflow:hidden;
+color:#dce4f5;
+pointer-events:none;
+}
+
+#code{
+position:absolute;
+inset:0;
+width:100%;
+height:100%;
+padding:17px 17px 80px 48px;
+border:0;
+outline:0;
+resize:none;
+background:transparent;
+color:transparent;
+caret-color:var(--cyan);
+font:14px/1.8 "SFMono-Regular",Consolas,monospace;
+white-space:pre;
+overflow:auto;
+z-index:2;
+tab-size:2;
+}
+
+#lineNumbers{
+position:absolute;
+left:0;
+top:0;
+width:39px;
+padding-top:17px;
+text-align:right;
+padding-right:9px;
+font:12px/1.8 monospace;
+color:#3b4557;
+pointer-events:none;
+z-index:3;
+}
+
+.command{
+color:var(--cyan);
+font-weight:900;
+}
+
+.action{
+color:var(--pink);
+font-weight:900;
+}
+
+.variable{
+color:var(--purple);
+font-weight:900;
+}
+
+.keyword{
+color:var(--orange);
+font-weight:900;
+}
+
+.value{
+color:var(--yellow);
+}
+
+.string{
+color:var(--green);
+}
+
+.server{
+color:var(--blue);
+font-weight:900;
+}
+
+.number{
+color:var(--yellow);
+}
+
+.console{
+height:31px;
+min-height:31px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:8px;
+padding:0 10px;
+background:#0c1017;
+border-top:1px solid var(--border);
+font:10px monospace;
+overflow:hidden;
+}
+
+.console-left{
+display:flex;
+align-items:center;
+gap:7px;
+min-width:0;
+overflow:hidden;
+}
+
+.console-right{
+display:flex;
+align-items:center;
+gap:10px;
+color:var(--muted);
+font-size:9px;
+white-space:nowrap;
+flex-shrink:0;
+}
+
+.console-dot{
+width:7px;
+height:7px;
+border-radius:50%;
+background:var(--green);
+box-shadow:0 0 10px var(--green);
+flex-shrink:0;
+}
+
+#consolePrompt{
+color:var(--green);
+font-weight:900;
+flex-shrink:0;
+}
+
+#consoleText{
+color:var(--green);
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+}
+
+.term-cursor{
+display:inline-block;
+width:6px;
+height:12px;
+background:var(--green);
+flex-shrink:0;
+animation:blink 1s steps(1) infinite;
+}
+
+@keyframes blink{
+50%{opacity:0;}
+}
+
+.editor::before{
+content:"";
+position:absolute;
+inset:0;
+background:repeating-linear-gradient(
+0deg,
+rgba(255,255,255,.015) 0px,
+rgba(255,255,255,.015) 1px,
+transparent 1px,
+transparent 3px
+);
+pointer-events:none;
+z-index:5;
+mix-blend-mode:overlay;
+}
+
+#code::-webkit-scrollbar{
+width:8px;
+height:8px;
+}
+
+#code::-webkit-scrollbar-track{
+background:#0b0e14;
+}
+
+#code::-webkit-scrollbar-thumb{
+background:#232b3a;
+border-radius:4px;
+}
+
+#code::-webkit-scrollbar-thumb:hover{
+background:#2e3850;
+}
+
+.bottom{
+height:52px;
+min-height:52px;
+display:flex;
+gap:7px;
+padding:7px;
+background:rgba(13,17,24,.96);
+border-top:1px solid var(--border);
+}
+
+.bottom button{
+flex:1;
+border:1px solid var(--border);
+border-radius:9px;
+background:#171d27;
+color:var(--text);
+font-size:10px;
+font-weight:900;
+cursor:pointer;
+transition:.15s;
+}
+
+.bottom button:active{
+transform:scale(.96);
+}
+
+.bottom .run{
+background:linear-gradient(135deg,#00bd68,#52f28a);
+color:#06120a;
+border:0;
+}
+
+.menu{
+position:fixed;
+left:8px;
+top:53px;
+width:215px;
+padding:6px;
+background:#151a23;
+border:1px solid var(--border);
+border-radius:12px;
+box-shadow:0 20px 70px #000c;
+z-index:1000;
+opacity:0;
+transform:translateY(-8px) scale(.97);
+pointer-events:none;
+transition:.17s;
+}
+
+.menu.open{
+opacity:1;
+transform:none;
+pointer-events:auto;
+}
+
+.menu-item{
+width:100%;
+padding:11px;
+border:0;
+background:transparent;
+color:var(--text);
+border-radius:8px;
+text-align:left;
+font-size:11px;
+font-weight:800;
+cursor:pointer;
+}
+
+.menu-item:hover{
+background:#222a38;
+color:var(--cyan);
+}
+
+.modal{
+position:fixed;
+inset:0;
+z-index:3000;
+display:none;
+align-items:center;
+justify-content:center;
+padding:18px;
+background:#000c;
+backdrop-filter:blur(8px);
+}
+
+.modal.open{
+display:flex;
+animation:fade .18s ease;
+}
+
+@keyframes fade{
+from{opacity:0}
+to{opacity:1}
+}
+
+.card{
+width:min(560px,100%);
+max-height:86dvh;
+overflow:auto;
+padding:18px;
+border:1px solid var(--border);
+border-radius:16px;
+background:linear-gradient(145deg,#171d27,#0e1219);
+box-shadow:0 30px 90px #000;
+animation:cardIn .22s cubic-bezier(.2,.8,.2,1);
+}
+
+@keyframes cardIn{
+from{
+transform:translateY(15px) scale(.96);
+opacity:0;
+}
+}
+
+.card-head{
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding-bottom:12px;
+margin-bottom:12px;
+border-bottom:1px solid var(--border);
+}
+
+.card-title{
+font-size:13px;
+font-weight:950;
+color:var(--cyan);
+}
+
+.close{
+border:0;
+background:var(--red);
+color:#fff;
+border-radius:8px;
+padding:6px 9px;
+font-size:11px;
+font-weight:900;
+cursor:pointer;
+}
+
+.help-row{
+padding:11px;
+margin:7px 0;
+border:1px solid var(--border);
+border-radius:9px;
+background:#131923;
+font-size:11px;
+line-height:1.5;
+}
+
+.help-row code{
+color:var(--yellow);
+}
+
+.help-group{
+font-size:9px;
+letter-spacing:1.4px;
+color:var(--muted);
+margin:14px 2px 4px;
+}
+
+.help-group:first-child{
+margin-top:0;
+}
+
+/* PREVIEW MODAL */
+
+.preview-card{
+width:min(760px,100%);
+max-height:90dvh;
+padding:0;
+overflow:hidden;
+display:flex;
+flex-direction:column;
+border:1px solid var(--border);
+border-radius:16px;
+background:#0d1017;
+box-shadow:0 30px 90px #000;
+}
+
+.preview-head{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:8px;
+padding:12px 14px;
+border-bottom:1px solid var(--border);
+background:linear-gradient(180deg,#171d27,#11151d);
+}
+
+.preview-head-actions{
+display:flex;
+gap:7px;
+align-items:center;
+}
+
+.preview-link{
+text-decoration:none;
+display:inline-flex;
+align-items:center;
+}
+
+#previewFrame{
+width:100%;
+height:min(74dvh,640px);
+border:0;
+background:#0b0e14;
+}
+
+#appRoot{
+display:none;
+}
+
+#splashScreen{
+position:fixed;
+inset:0;
+z-index:9000;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+gap:14px;
+background:
+radial-gradient(circle at 10% 0%,#17243d 0,transparent 35%),
+radial-gradient(circle at 100% 100%,#24143b 0,transparent 40%),
+var(--bg);
+transition:opacity .35s ease;
+}
+
+#splashScreen.fade-out{
+opacity:0;
+pointer-events:none;
+}
+
+.splash-logo{
+font-size:34px;
+font-weight:950;
+letter-spacing:6px;
+color:var(--cyan);
+text-shadow:0 0 30px #00eaff77;
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+.splash-sub{
+font-size:11px;
+letter-spacing:6px;
+color:var(--muted);
+}
+
+.splash-bar-track{
+width:min(240px,70vw);
+height:4px;
+border-radius:4px;
+background:#ffffff14;
+overflow:hidden;
+margin-top:10px;
+}
+
+.splash-bar-fill{
+height:100%;
+width:0%;
+background:linear-gradient(90deg,#00eaff,#a970ff);
+transition:width .15s ease;
+}
+
+.splash-status{
+font-size:10px;
+color:var(--muted);
+font-family:monospace;
+letter-spacing:.5px;
+}
+
+#loginScreen{
+display:none;
+position:fixed;
+inset:0;
+z-index:2500;
+align-items:center;
+justify-content:center;
+padding:22px;
+background:
+radial-gradient(circle at 10% 0%,#17243d 0,transparent 35%),
+radial-gradient(circle at 100% 100%,#24143b 0,transparent 40%),
+var(--bg);
+}
+
+.login-inner{
+width:min(340px,100%);
+text-align:center;
+}
+
+.login-note{
+font-size:11px;
+line-height:1.6;
+color:var(--muted);
+padding:11px;
+border:1px solid var(--border);
+border-radius:9px;
+background:#131923;
+margin-bottom:16px;
+text-align:left;
+}
+
+.login-input{
+width:100%;
+padding:11px 12px;
+border-radius:9px;
+border:1px solid var(--border);
+background:#0b0e14;
+color:var(--text);
+font-size:13px;
+margin-bottom:14px;
+}
+
+.avatar-picker{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:8px;
+}
+
+.avatar-option{
+padding:10px 0;
+font-size:20px;
+border-radius:9px;
+border:1px solid var(--border);
+background:#131923;
+cursor:pointer;
+}
+
+.avatar-option.selected{
+border-color:var(--cyan);
+background:#00eaff1a;
+}
+
+.profile-row{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:8px;
+padding:9px 12px;
+margin-top:12px;
+border:1px solid var(--border);
+border-radius:10px;
+background:#131923;
+font-size:12px;
+}
+
+.profile-switch{
+border:0;
+background:transparent;
+color:var(--cyan);
+font-size:11px;
+font-weight:800;
+cursor:pointer;
+}
+
+#mainMenu{
+display:none;
+position:fixed;
+inset:0;
+z-index:2000;
+overflow:auto;
+background:
+radial-gradient(circle at 10% 0%,#17243d 0,transparent 35%),
+radial-gradient(circle at 100% 100%,#24143b 0,transparent 40%),
+var(--bg);
+padding:20px 16px 40px;
+}
+
+.menu-screen-inner{
+max-width:520px;
+margin:0 auto;
+}
+
+.menu-header{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:10px;
+}
+
+.mix-card{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:10px;
+padding:13px 14px;
+margin:8px 0;
+border:1px solid var(--border);
+border-radius:12px;
+background:#131923;
+}
+
+.mix-card-name{
+font-size:13px;
+font-weight:800;
+}
+
+.mix-card-date{
+font-size:10px;
+color:var(--muted);
+margin-top:3px;
+}
+
+.mix-card-actions{
+display:flex;
+gap:6px;
+align-items:center;
+flex-shrink:0;
+}
+
+.menu-empty{
+padding:20px;
+text-align:center;
+color:var(--muted);
+font-size:12px;
+}
+
+.toast{
+position:fixed;
+left:50%;
+bottom:68px;
+transform:translate(-50%,20px);
+padding:10px 15px;
+background:#151b25ee;
+border:1px solid var(--border);
+border-radius:10px;
+box-shadow:0 15px 40px #0009;
+font-size:11px;
+z-index:6000;
+opacity:0;
+pointer-events:none;
+transition:.22s;
+}
+
+.toast.show{
+opacity:1;
+transform:translate(-50%,0);
+}
+
+@media(max-width:650px){
+
+.topbar{
+height:57px;
+min-height:57px;
+}
+
+.logo{
+font-size:11px;
+}
+
+.top-actions .action-btn{
+font-size:0;
+width:35px;
+padding:0;
+}
+
+#helpBtn::after{
+content:"❔";
+font-size:14px;
+}
+
+#saveBtn::after{
+content:"💾";
+font-size:14px;
+}
+
+#downloadBtn{
+display:none;
+}
+
+#previewBtn::after{
+content:"▶";
+font-size:13px;
+}
+
+#code,
+#highlight{
+font-size:13px;
+line-height:1.85;
+}
+
+#lineNumbers{
+font-size:11px;
+line-height:1.85;
+}
+
+.bottom{
+height:50px;
+min-height:50px;
+}
+
+.bottom button{
+font-size:9px;
+}
+
+.console{
+height:29px;
+min-height:29px;
+}
+}
+
+@media(max-width:380px){
+
+.bottom button:nth-child(2){
+display:none;
+}
+
+.bottom button{
+font-size:9px;
+}
+
+}
+</style>
+</head>
+
+<body>
+
+<!-- SPLASH -->
+
+<div id="splashScreen">
+<div class="splash-logo">
+<span class="logo-dot"></span>
+MIX
+</div>
+<div class="splash-sub">STUDIO</div>
+<div class="splash-bar-track">
+<div class="splash-bar-fill" id="splashBar"></div>
+</div>
+<div class="splash-status" id="splashStatus">Loading MIX runtime…</div>
+</div>
+
+<!-- PROFILE (local only — no real Google/GitHub auth is possible here) -->
+
+<div id="loginScreen">
+<div class="login-inner">
+
+<div class="splash-logo" style="font-size:26px;">
+<span class="logo-dot"></span>MIX
+</div>
+<div class="splash-sub" style="margin-bottom:14px;">WELCOME</div>
+
+<div class="login-note">
+MIX Studio runs entirely on this device with no server — it can't verify a real Google or GitHub account. This just names your space here, stored locally.
+</div>
+
+<input id="loginName" type="text" placeholder="Your name" class="login-input" maxlength="24">
+
+<div class="avatar-picker" id="avatarPicker"></div>
+
+<button class="action-btn preview" id="loginContinueBtn" style="width:100%;margin-top:14px;">Continue</button>
+
+</div>
+</div>
+
+<!-- MAIN MENU -->
+
+<div id="mainMenu">
+<div class="menu-screen-inner">
+
+<div class="menu-header">
+<div class="splash-logo" style="font-size:22px;letter-spacing:3px;">
+<span class="logo-dot"></span>MIX
+</div>
+<button class="action-btn" id="collabBtn">🤝 Collaborate</button>
+</div>
+
+<div class="profile-row" id="profileRow"></div>
+
+<div style="display:flex;gap:8px;margin:16px 0 6px;">
+<button class="action-btn preview" id="newMixBtn" style="flex:1;">＋ New Mix</button>
+<button class="action-btn" id="newGameBtn" style="flex:1;background:linear-gradient(135deg,#a970ff,#ff5ca8);border:0;">🎮 New Game</button>
+</div>
+
+<div class="explorer-title">YOUR MIXES</div>
+<div id="mixList"></div>
+
+</div>
+</div>
+
+<div class="app" id="appRoot">
+
+<header class="topbar">
+
+<button class="icon-btn" id="menuBtn">☰</button>
+
+<div class="logo" title="MIX Studio — Full Version">
+<span class="logo-dot"></span>
+MIX
+</div>
+
+<div class="top-actions">
+
+<button class="action-btn" id="helpBtn">❔ Help</button>
+
+<button class="action-btn save" id="saveBtn">💾 Save</button>
+
+<button class="action-btn" id="downloadBtn">📥 Download</button>
+
+<button class="action-btn preview" id="previewBtn">▶ Preview</button>
+
+</div>
+
+</header>
+
+<div class="workspace">
+
+<aside class="sidebar" id="sidebar">
+
+<div class="explorer-title">PROJECT</div>
+
+<div class="project">⚡ MIX PROJECT</div>
+
+<button class="file active" data-file="main.mix">📄 main.mix</button>
+<button class="file" data-file="config.mix">⚙️ config.mix</button>
+<button class="file" data-file="server.mix">🖥️ server.mix</button>
+
+</aside>
+
+<main class="editor-area">
+
+<div class="tabbar">
+<div class="tab">
+<span class="tab-dot">●</span>
+<span id="activeTabName">main.mix</span>
+</div>
+</div>
+
+<div class="editor">
+
+<div class="code-wrap">
+
+<div id="lineNumbers"></div>
+
+<div id="highlight"></div>
+
+<textarea id="code" spellcheck="false">change background color = #10131a
+change text color = #ffffff
+say Welcome to MIX
+mix like H easy My MIX App
+
+create variable score = 100
+create variable serverName = Minecraft
+
+show variable score
+show variable serverName
+
+turn on server = true
+
+add line
+
+add button
+add button = download
+add button = alert
+add button = back
+add button = reload
+add button = rotate
+
+add space
+
+add image = https://placekitten.com/320/200
+add link = https://anthropic.com
+
+add subheading Level Up
+add box = You just unlocked new commands!
+add emoji = 🎉
+
+add 50 to score
+show variable score
+
+add button = confetti
+
+ask What color is the sky = blue
+add button = question
+
+add sound = ding
+add sound = library</textarea>
+
+</div>
+
+</div>
+
+<div class="console">
+<div class="console-left">
+<span class="console-dot" id="consoleDot"></span>
+<span id="consolePrompt">$</span>
+<span id="consoleText">MIX runtime ready.</span>
+<span class="term-cursor"></span>
+</div>
+<div class="console-right">
+<span id="statusLang">MIX</span>
+<span id="statusPos">Ln 1, Col 1</span>
+</div>
+</div>
+
+<div class="bottom">
+
+<button class="run" id="bottomPreview">▶ Preview</button>
+
+<button id="formatBtn">✨ Format</button>
+
+<button id="newBtn">＋ File</button>
+
+</div>
+
+</main>
+
+</div>
+
+</div>
+
+<!-- MENU -->
+
+<div class="menu" id="menu">
+
+<button class="menu-item" id="menuMyMixes">
+🏠 My Mixes
+</button>
+
+<button class="menu-item" id="menuCollab">
+🤝 Collaborate
+</button>
+
+<button class="menu-item" id="menuHelp">
+📖 Help
+</button>
+
+<button class="menu-item" id="menuNew">
+＋ New MIX File
+</button>
+
+</div>
+
+<!-- HELP (also doubles as the MIX learning reference) -->
+
+<div class="modal" id="helpModal">
+
+<div class="card">
+
+<div class="card-head">
+
+<div class="card-title">
+📖 MIX Command Reference
+</div>
+
+<button class="close" data-close="helpModal">✕</button>
+
+</div>
+
+<div class="help-group">PAGE SETUP</div>
+
+<div class="help-row">
+<code>change background color = [color]</code><br>
+Changes the page background. Example: <code>change background color = #10131a</code>
+</div>
+
+<div class="help-row">
+<code>change text color = [color]</code><br>
+Changes the default text color. Example: <code>change text color = #ffffff</code>
+</div>
+
+<div class="help-row">
+<code>change title = [text]</code><br>
+Changes the browser tab title.
+</div>
+
+<div class="help-group">TEXT</div>
+
+<div class="help-row">
+<code>say [text]</code><br>
+Displays normal text. Example: <code>say Welcome to MIX</code>
+</div>
+
+<div class="help-row">
+<code>mix like H easy [text]</code><br>
+Creates a large heading. Example: <code>mix like H easy My MIX App</code>
+</div>
+
+<div class="help-group">VARIABLES</div>
+
+<div class="help-row">
+<code>create variable [name] = [value]</code><br>
+Creates a MIX variable. Example: <code>create variable score = 100</code>
+</div>
+
+<div class="help-row">
+<code>show variable [name]</code><br>
+Displays a variable's current value on the page. Example: <code>show variable score</code>
+</div>
+
+<div class="help-row">
+<code>change variable [name] = [value]</code><br>
+Updates a variable you already created.
+</div>
+
+<div class="help-row">
+<code>add [number] to [name]</code><br>
+Increases a number variable. Example: <code>add 10 to score</code>
+</div>
+
+<div class="help-row">
+<code>subtract [number] from [name]</code><br>
+Decreases a number variable. Example: <code>subtract 5 from score</code>
+</div>
+
+<div class="help-group">SERVER STATUS</div>
+
+<div class="help-row">
+<code>turn on server = true</code><br>
+Shows a green "online" server badge.
+</div>
+
+<div class="help-row">
+<code>turn off server = false</code><br>
+Shows a red "offline" server badge.
+</div>
+
+<div class="help-group">LAYOUT</div>
+
+<div class="help-row">
+<code>add line</code><br>
+Draws a horizontal divider.
+</div>
+
+<div class="help-row">
+<code>add space</code><br>
+Adds vertical spacing between elements.
+</div>
+
+<div class="help-group">MEDIA & LINKS</div>
+
+<div class="help-row">
+<code>add image = [url]</code><br>
+Inserts an image. Example: <code>add image = https://example.com/cat.png</code>
+</div>
+
+<div class="help-row">
+<code>add link = [url]</code><br>
+Inserts a clickable link.
+</div>
+
+<div class="help-row">
+<code>add subheading [text]</code><br>
+A smaller heading, under a main title.
+</div>
+
+<div class="help-row">
+<code>add quote = [text]</code><br>
+Displays text as a styled quote.
+</div>
+
+<div class="help-row">
+<code>add box = [text]</code><br>
+Displays text inside a highlighted card.
+</div>
+
+<div class="help-row">
+<code>add emoji = [emoji]</code><br>
+Shows one big emoji. Example: <code>add emoji = 🎉</code>
+</div>
+
+<div class="help-group">GAME MAKER</div>
+
+<div class="help-row">
+<code>add player = [emoji]</code><br>
+Places a controllable sprite in a play area.
+</div>
+
+<div class="help-row">
+<code>add joystick</code><br>
+Adds a drag-to-move joystick for the player above it.
+</div>
+
+<div class="help-row">
+<code>add obstacle = [emoji]</code><br>
+Places an obstacle in the last player's play area. Touching it shakes the screen and costs health, if a health bar exists.
+</div>
+
+<div class="help-row">
+<code>add gravity</code><br>
+Adds a Jump button for the player above it.
+</div>
+
+<div class="help-row">
+<code>add switch = [label]</code><br>
+A tappable on/off toggle.
+</div>
+
+<div class="help-row">
+<code>add menu = item1, item2, item3</code><br>
+A simple tappable menu list.
+</div>
+
+<div class="help-row">
+<code>add score = [value]</code><br>
+A HUD-style score display.
+</div>
+
+<div class="help-row">
+<code>add healthbar = [percent]</code><br>
+A HUD-style health bar. Drops when the player hits an obstacle.
+</div>
+
+<div class="help-group">FUN & INTERACTIVE</div>
+
+<div class="help-row">
+<code>add secret = [text]</code><br>
+Hides text behind a "tap to reveal" card.
+</div>
+
+<div class="help-row">
+<code>add progress = [percent]</code><br>
+Shows a progress bar. Example: <code>add progress = 70</code>
+</div>
+
+<div class="help-row">
+<code>add rating = [number]</code><br>
+Shows a star rating out of 5.
+</div>
+
+<div class="help-row">
+<code>add badge = [text]</code><br>
+Shows a small pill-shaped label.
+</div>
+
+<div class="help-row">
+<code>add countdown = [seconds]</code><br>
+A live countdown timer.
+</div>
+
+<div class="help-group">BUTTONS</div>
+
+<div class="help-row">
+<code>add button</code><br>
+Creates a plain button that does nothing on its own.
+</div>
+
+<div class="help-row">
+<code>add button = download</code><br>
+Downloads the preview page as a file.
+</div>
+
+<div class="help-row">
+<code>add button = alert</code><br>
+Pops up an alert message.
+</div>
+
+<div class="help-row">
+<code>add button = back</code><br>
+Goes back a page.
+</div>
+
+<div class="help-row">
+<code>add button = reload</code><br>
+Reloads the preview.
+</div>
+
+<div class="help-row">
+<code>add button = rotate</code><br>
+Rotates the preview page 90°.
+</div>
+
+<div class="help-row">
+<code>add button = confetti</code><br>
+Bursts confetti across the preview. Just for fun.
+</div>
+
+<div class="help-row">
+<code>add button = vibrate</code><br>
+Vibrates the device (on supported phones).
+</div>
+
+<div class="help-row">
+<code>add button = fullscreen</code><br>
+Toggles fullscreen for the preview.
+</div>
+
+<div class="help-row">
+<code>add button = share</code><br>
+Copies this mix as a share code, ready to send to a friend.
+</div>
+
+<div class="help-row">
+<code>add button = print</code><br>
+Opens the print dialog for the preview.
+</div>
+
+<div class="help-row">
+<code>ask [question] = [answer]</code><br>
+Sets up a question and its correct answer.
+</div>
+
+<div class="help-row">
+<code>add button = question</code><br>
+Asks the question above it. Wrong answer shakes the screen.
+</div>
+
+<div class="help-group">SOUND</div>
+
+<div class="help-row">
+<code>add sound = [name]</code><br>
+Plays a sound. Type an unknown name to see the full library.<br>
+Library: ding, buzz, coin, pop, success, fail, click, chime, laser, drum
+</div>
+
+<div class="help-group">BUILT-IN VARIABLES</div>
+
+<div class="help-row">
+These already exist — just <code>show variable [name]</code>, no need to create them first.<br><br>
+date, time, year, dayOfWeek, greeting, pi, mixVersion, randomNumber, randomColor, colorName, coinFlip, diceRoll, luckyNumber, secretCode, emojiRandom, animalRandom, rockPaperScissors, magic8ball, weatherVibe, tempFeel, motivation
+</div>
+
+</div>
+
+</div>
+
+<!-- GAME TYPE CHOICE -->
+
+<div class="modal" id="gameTypeModal">
+
+<div class="card">
+
+<div class="card-head">
+<div class="card-title">🎮 New Game</div>
+<button class="close" data-close="gameTypeModal">✕</button>
+</div>
+
+<div class="help-row">
+Same simple commands either way (player, joystick, obstacle, gravity) — this only changes how it renders.
+</div>
+
+<button class="action-btn preview" id="choose2dBtn" style="width:100%;margin:10px 0 8px;">🕹️ 2D — flat, top-down</button>
+<button class="action-btn" id="choose3dBtn" style="width:100%;background:linear-gradient(135deg,#a970ff,#ff5ca8);border:0;">🧊 3D — real 3D scene</button>
+
+</div>
+
+</div>
+
+<!-- COLLABORATE (share codes — not live syncing) -->
+
+<div class="modal" id="collabModal">
+
+<div class="card">
+
+<div class="card-head">
+
+<div class="card-title">🤝 Collaborate</div>
+
+<button class="close" data-close="collabModal">✕</button>
+
+</div>
+
+<div class="help-group">SHARE THIS MIX</div>
+
+<div class="help-row">
+Open a mix, then copy its share code below and send it to a friend. They paste it in "Import" to get their own copy. This isn't live syncing — it's more like sending a save file.
+</div>
+
+<textarea id="shareCodeBox" readonly rows="3" placeholder="Open a mix first to generate its share code." style="width:100%;background:#0b0e14;color:var(--cyan);border:1px solid var(--border);border-radius:8px;padding:8px;font:11px monospace;margin-bottom:8px;resize:vertical;"></textarea>
+
+<button class="action-btn save" id="shareCopyBtn" style="width:100%;margin-bottom:18px;">📋 Copy Share Code</button>
+
+<div class="help-group">IMPORT A FRIEND'S MIX</div>
+
+<textarea id="importCodeBox" rows="3" placeholder="Paste a share code here…" style="width:100%;background:#0b0e14;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px;font:11px monospace;margin-bottom:8px;resize:vertical;"></textarea>
+
+<button class="action-btn preview" id="importBtn" style="width:100%;">📥 Import Mix</button>
+
+</div>
+
+</div>
+
+<!-- LIVE PREVIEW (inline, no popup blocking) -->
+
+<div class="modal" id="previewModal">
+
+<div class="preview-card">
+
+<div class="preview-head">
+
+<div class="card-title">▶ MIX Preview</div>
+
+<div class="preview-head-actions">
+
+<a id="previewOpenTab" class="action-btn preview-link" target="_blank" rel="noopener">↗ Open Tab</a>
+
+<button class="close" data-close="previewModal">✕</button>
+
+</div>
+
+</div>
+
+<iframe id="previewFrame" sandbox="allow-scripts allow-modals allow-downloads allow-popups"></iframe>
+
+</div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+/* =========================================================
+   MIX STUDIO
+========================================================= */
+
+const code=document.getElementById("code");
+const highlight=document.getElementById("highlight");
+const lineNumbers=document.getElementById("lineNumbers");
+const consoleText=document.getElementById("consoleText");
+const consoleDot=document.getElementById("consoleDot");
+const sidebar=document.getElementById("sidebar");
+const menu=document.getElementById("menu");
+const toast=document.getElementById("toast");
+const activeTabName=document.getElementById("activeTabName");
+
+let audioContext=null;
+let toastTimer=null;
+let lastPreviewUrl=null;
+
+const MIX_SOUNDS=["ding","buzz","coin","pop","success","fail","click","chime","laser","drum"];
+
+const FILE_TEMPLATES={
+"main.mix":code.value,
+"config.mix":"change background color = #0e1420\nmix like H easy Config\nsay This file stores app configuration.\ncreate variable theme = dark\ncreate variable version = 1\nshow variable theme",
+"server.mix":"change background color = #101820\nmix like H easy Server Status\nturn on server = true\nsay The MIX server is currently running.\nadd button = reload"
+};
+
+const WELCOME_CODE=code.value;
+let currentFile="main.mix";
+let currentProjectId=null;
+
+const LIBRARY_KEY="MIX_LIBRARY_V1";
+
+function customSoundsKey(){
+return "MIX_CUSTOM_SOUNDS_"+(currentProjectId||"none");
+}
+
+function getCustomSounds(){
+try{
+return JSON.parse(localStorage.getItem(customSoundsKey()))||{};
+}catch(error){
+return {};
+}
+}
+
+function setCustomSound(name,dataURL){
+const sounds=getCustomSounds();
+sounds[name]=dataURL;
+localStorage.setItem(customSoundsKey(),JSON.stringify(sounds));
+}
+
+
+/* =========================================================
+   AUDIO — kept quiet on purpose (low gain values)
+========================================================= */
+
+function getAudio(){
+
+if(!audioContext){
+
+audioContext=
+new(window.AudioContext||window.webkitAudioContext)();
+
+}
+
+if(audioContext.state==="suspended"){
+audioContext.resume();
+}
+
+return audioContext;
+
+}
+
+function beep(
+frequency=500,
+duration=.05,
+type="sine",
+volume=.012
+){
+
+try{
+
+const ctx=getAudio();
+
+const osc=ctx.createOscillator();
+const gain=ctx.createGain();
+
+osc.type=type;
+
+osc.frequency.setValueAtTime(
+frequency,
+ctx.currentTime
+);
+
+gain.gain.setValueAtTime(
+volume,
+ctx.currentTime
+);
+
+gain.gain.exponentialRampToValueAtTime(
+.001,
+ctx.currentTime+duration
+);
+
+osc.connect(gain);
+gain.connect(ctx.destination);
+
+osc.start();
+osc.stop(ctx.currentTime+duration);
+
+}catch(error){}
+
+}
+
+function clickSound(){
+beep(540,.04,"sine",.012);
+}
+
+function typeSound(){
+beep(
+180+Math.random()*80,
+.016,
+"square",
+.0025
+);
+}
+
+function successSound(){
+
+beep(520,.05,"sine",.012);
+
+setTimeout(()=>{
+beep(760,.07,"sine",.014);
+},55);
+
+}
+
+function errorSound(){
+beep(170,.1,"sawtooth",.012);
+}
+
+
+/* =========================================================
+   TOAST / CONSOLE
+========================================================= */
+
+function consoleLog(message,type="ok"){
+
+consoleText.textContent=message;
+
+const color=
+type==="error"
+?"#ff5260"
+:"#52f28a";
+
+consoleText.style.color=color;
+consoleDot.style.background=color;
+consoleDot.style.boxShadow=`0 0 10px ${color}`;
+
+}
+
+function showToast(message){
+
+toast.textContent=message;
+
+toast.classList.add("show");
+
+clearTimeout(toastTimer);
+
+toastTimer=setTimeout(()=>{
+toast.classList.remove("show");
+},1800);
+
+}
+
+
+/* =========================================================
+   ESCAPE
+========================================================= */
+
+function escapeHTML(value){
+
+return String(value)
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================================================
+   SYNTAX HIGHLIGHT (display only — parsing below is separate,
+   so a highlighting quirk here can never break Preview)
+========================================================= */
+
+function highlightLine(line){
+
+if(!line.trim()){
+return "";
+}
+
+let result=escapeHTML(line);
+
+/* the "=" sign, only when surrounded by spaces, so it can
+   never collide with an HTML attribute like class="..." */
+
+result=result.replace(
+/(?<=\s)=(?=\s)/g,
+'<span class="keyword">=</span>'
+);
+
+result=result.replace(
+/(&quot;.*?&quot;|&#039;.*?&#039;)/g,
+'<span class="string">$1</span>'
+);
+
+result=result.replace(
+/^(\s*)(change\s+background\s+color|change\s+text\s+color|change\s+title)\b/i,
+'$1<span class="command">$2</span>'
+);
+
+result=result.replace(
+/^(\s*)(say)\b/i,
+'$1<span class="command">$2</span>'
+);
+
+result=result.replace(
+/^(\s*)(mix\s+like\s+H\s+easy)\b/i,
+'$1<span class="command">$2</span>'
+);
+
+result=result.replace(
+/^(\s*)(create\s+variable|show\s+variable|change\s+variable)(\s+)([A-Za-z_]\w*)/i,
+'$1<span class="command">$2</span>$3<span class="variable">$4</span>'
+);
+
+result=result.replace(
+/^(\s*)(add)(\s+)(\d+(?:\.\d+)?)(\s+to\s+)([A-Za-z_]\w*)/i,
+'$1<span class="command">$2</span>$3<span class="number">$4</span>$5<span class="variable">$6</span>'
+);
+
+result=result.replace(
+/^(\s*)(subtract)(\s+)(\d+(?:\.\d+)?)(\s+from\s+)([A-Za-z_]\w*)/i,
+'$1<span class="command">$2</span>$3<span class="number">$4</span>$5<span class="variable">$6</span>'
+);
+
+result=result.replace(
+/^(\s*)(turn)\b/i,
+'$1<span class="command">$2</span>'
+);
+
+result=result.replace(
+/^(\s*)(add\s+button|add\s+image|add\s+link|add\s+line|add\s+space|add\s+subheading|add\s+quote|add\s+box|add\s+emoji|add\s+sound|add\s+secret|add\s+progress|add\s+rating|add\s+badge|add\s+countdown|ask)\b/i,
+'$1<span class="command">$2</span>'
+);
+
+result=result.replace(
+/\b(download|alert|back|reload|rotate|confetti|question|vibrate|fullscreen|share|print)\b/gi,
+'<span class="action">$1</span>'
+);
+
+result=result.replace(
+/\bserver\b/gi,
+'<span class="server">$&</span>'
+);
+
+result=result.replace(
+/\b(on|off|true|false)\b/gi,
+'<span class="keyword">$1</span>'
+);
+
+result=result.replace(
+/\b\d+\b/g,
+'<span class="number">$&</span>'
+);
+
+result=result.replace(
+/#[0-9a-fA-F]{3,8}\b/g,
+'<span class="value">$&</span>'
+);
+
+return result;
+
+}
+
+function updateEditor(){
+
+const lines=code.value.split("\n");
+
+highlight.innerHTML=
+lines.map(highlightLine).join("\n")+"\n";
+
+lineNumbers.innerHTML=
+lines.map((_,i)=>i+1).join("<br>");
+
+}
+
+updateEditor();
+
+
+/* =========================================================
+   MIX LANGUAGE INTERPRETER
+   Every line is parsed against the exact commands listed
+   in the Help modal. Unrecognized lines are reported to
+   the console instead of silently failing.
+========================================================= */
+
+function getSystemVariables(){
+
+const now=new Date();
+const hours=now.getHours();
+
+const pick=list=>list[Math.floor(Math.random()*list.length)];
+
+const emojis=["🐱","🐶","🦊","🐼","🦁","🐸","🦄","🐙","🦋","🐝"];
+const animals=["Fox","Panda","Otter","Falcon","Dolphin","Tiger","Rabbit","Owl","Wolf","Koala"];
+const colors=["Crimson","Azure","Emerald","Amber","Violet","Coral","Teal","Magenta","Gold","Indigo"];
+const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+const cardRanks=["Ace","2","3","4","5","6","7","8","9","10","Jack","Queen","King"];
+const cardSuits=["Spades","Hearts","Clubs","Diamonds"];
+const zodiacs=["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+const planets=["Mercury","Venus","Earth","Mars","Jupiter","Saturn","Uranus","Neptune"];
+const fruits=["Apple","Banana","Mango","Cherry","Kiwi","Peach","Grape","Pineapple","Lemon","Melon"];
+const vegetables=["Carrot","Broccoli","Potato","Pepper","Onion","Spinach","Corn","Pea","Beet","Squash"];
+const sports=["Soccer","Basketball","Tennis","Swimming","Skating","Cycling","Boxing","Archery","Surfing","Golf"];
+const countries=["Japan","Brazil","Canada","Kenya","Norway","Egypt","India","Peru","Iceland","Vietnam"];
+const languages=["English","Spanish","Japanese","French","Swahili","Hindi","Arabic","German","Korean","Italian"];
+const superpowers=["Flight","Invisibility","Super Strength","Telepathy","Time Travel","Shape-Shifting","Speed","Teleportation"];
+const moods=["Excited","Curious","Calm","Focused","Playful","Determined","Cheerful","Bold"];
+const seasons=["Spring","Summer","Autumn","Winter"];
+const instruments=["Guitar","Piano","Drums","Violin","Trumpet","Flute","Saxophone","Cello"];
+const dances=["Breakdance","Salsa","Tango","Ballet","Hip-Hop","Waltz","Moonwalk"];
+const jobs=["Astronaut","Chef","Engineer","Artist","Scientist","Explorer","Pilot","Detective"];
+const vehicles=["Bicycle","Rocket","Submarine","Hot Air Balloon","Skateboard","Spaceship","Train"];
+const gadgets=["Jetpack","Robot Arm","Hoverboard","Smart Watch","Drone","VR Headset"];
+const snacks=["Popcorn","Pretzel","Chips","Cookie","Granola Bar","Trail Mix"];
+const drinks=["Lemonade","Smoothie","Hot Cocoa","Iced Tea","Sparkling Water"];
+const hobbies=["Painting","Gaming","Hiking","Coding","Photography","Gardening","Reading"];
+const genres=["Adventure","Mystery","Comedy","Sci-Fi","Fantasy","Documentary"];
+const gemstones=["Ruby","Sapphire","Emerald","Diamond","Amethyst","Topaz","Opal"];
+
+return{
+date:now.toLocaleDateString(),
+time:now.toLocaleTimeString(),
+year:String(now.getFullYear()),
+month:now.toLocaleDateString(undefined,{month:"long"}),
+monthNumber:String(now.getMonth()+1),
+hour:String(now.getHours()),
+minute:String(now.getMinutes()),
+dayOfWeek:now.toLocaleDateString(undefined,{weekday:"long"}),
+greeting:hours<12?"Good morning":hours<18?"Good afternoon":"Good evening",
+pi:"3.14159",
+mixVersion:"4.0",
+randomNumber:String(Math.floor(Math.random()*100)+1),
+randomColor:"#"+Math.floor(Math.random()*16777215).toString(16).padStart(6,"0"),
+colorName:pick(colors),
+randomLetter:pick(letters),
+randomBool:Math.random()<.5?"True":"False",
+randomPercent:String(Math.floor(Math.random()*101))+"%",
+coinFlip:Math.random()<.5?"Heads":"Tails",
+diceRoll:String(Math.floor(Math.random()*6)+1),
+luckyNumber:String(Math.floor(Math.random()*99)+1),
+secretCode:String(Math.floor(Math.random()*9000)+1000),
+emojiRandom:pick(emojis),
+animalRandom:pick(animals),
+rockPaperScissors:pick(["Rock","Paper","Scissors"]),
+magic8ball:pick(["Yes","No","Maybe","Ask again later","Definitely"]),
+weatherVibe:pick(["Sunny","Rainy","Cloudy","Windy","Snowy"]),
+tempFeel:pick(["Hot","Warm","Cool","Cold"]),
+motivation:pick(["You've got this!","Keep going!","Nice work!","Almost there!","Great job!"]),
+randomCard:pick(cardRanks)+" of "+pick(cardSuits),
+randomZodiac:pick(zodiacs),
+randomPlanet:pick(planets),
+randomFruit:pick(fruits),
+randomVegetable:pick(vegetables),
+randomSport:pick(sports),
+randomCountry:pick(countries),
+randomLanguage:pick(languages),
+randomSuperpower:pick(superpowers),
+randomMood:pick(moods),
+randomSeason:pick(seasons),
+randomInstrument:pick(instruments),
+randomDance:pick(dances),
+randomJob:pick(jobs),
+randomVehicle:pick(vehicles),
+randomGadget:pick(gadgets),
+randomSnack:pick(snacks),
+randomDrink:pick(drinks),
+randomHobby:pick(hobbies),
+randomGenre:pick(genres),
+randomGemstone:pick(gemstones)
+};
+
+}
+
+function parseMixSource(source,customSounds,renderMode){
+
+customSounds=customSounds||{};
+renderMode=renderMode||"2d";
+const customSoundRefs={};
+
+const lines=source.split(/\r?\n/);
+
+let background="#0b0e14";
+let textColor="#f2f6ff";
+let pageTitle="MIX Preview";
+const variables={};
+const SYSTEM_VARS=getSystemVariables();
+const bodyParts=[];
+const errors=[];
+const pendingQuestions=[];
+const obstaclesByPlayer={};
+let playerCount=0;
+let lastPlayerId=null;
+let buttonCount=0;
+
+lines.forEach((raw,index)=>{
+
+const line=raw.trim();
+
+if(!line)return;
+
+let m;
+
+if(m=line.match(/^change\s+background\s+color\s*=\s*(.+)$/i)){
+background=m[1].trim();
+return;
+}
+
+if(m=line.match(/^change\s+text\s+color\s*=\s*(.+)$/i)){
+textColor=m[1].trim();
+return;
+}
+
+if(m=line.match(/^change\s+title\s*=\s*(.+)$/i)){
+pageTitle=m[1].trim();
+return;
+}
+
+if(m=line.match(/^mix\s+like\s+H\s+easy\s+(.+)$/i)){
+bodyParts.push(
+`<h1 class="mix-heading">${escapeHTML(m[1].trim())}</h1>`
+);
+return;
+}
+
+if(m=line.match(/^say\s+(.+)$/i)){
+bodyParts.push(
+`<p class="mix-text">${escapeHTML(m[1].trim())}</p>`
+);
+return;
+}
+
+if(m=line.match(/^create\s+variable\s+([A-Za-z_][\w]*)\s*=\s*(.+)$/i)){
+variables[m[1]]=m[2].trim();
+return;
+}
+
+if(m=line.match(/^show\s+variable\s+([A-Za-z_][\w]*)$/i)){
+const name=m[1];
+if(Object.prototype.hasOwnProperty.call(variables,name)){
+bodyParts.push(
+`<p class="mix-text mix-var"><span class="mix-var-name">${escapeHTML(name)}</span> = ${escapeHTML(variables[name])}</p>`
+);
+}else if(Object.prototype.hasOwnProperty.call(SYSTEM_VARS,name)){
+bodyParts.push(
+`<p class="mix-text mix-var"><span class="mix-var-name">${escapeHTML(name)}</span> = ${escapeHTML(SYSTEM_VARS[name])}</p>`
+);
+}else{
+errors.push(`Line ${index+1}: "${name}" isn't a variable yet — create it, or check Help for built-in variables.`);
+}
+return;
+}
+
+if(m=line.match(/^turn\s+(on|off)\s+server\s*=\s*(true|false)$/i)){
+const isOnline=m[1].toLowerCase()==="on";
+bodyParts.push(
+`<div class="mix-server ${isOnline?"online":"offline"}"><span class="dot"></span>Server ${isOnline?"Online":"Offline"}</div>`
+);
+return;
+}
+
+if(m=line.match(/^add\s+line$/i)){
+bodyParts.push(`<hr class="mix-line">`);
+return;
+}
+
+if(m=line.match(/^add\s+space$/i)){
+bodyParts.push(`<div class="mix-space"></div>`);
+return;
+}
+
+if(m=line.match(/^add\s+image\s*=\s*(\S+)$/i)){
+bodyParts.push(
+`<img class="mix-image" src="${escapeHTML(m[1].trim())}" alt="MIX image">`
+);
+return;
+}
+
+if(m=line.match(/^add\s+link\s*=\s*(\S+)$/i)){
+const url=m[1].trim();
+bodyParts.push(
+`<a class="mix-link" href="${escapeHTML(url)}" target="_blank" rel="noopener">${escapeHTML(url)}</a>`
+);
+return;
+}
+
+if(m=line.match(/^add\s+subheading\s+(.+)$/i)){
+bodyParts.push(
+`<h2 class="mix-subheading">${escapeHTML(m[1].trim())}</h2>`
+);
+return;
+}
+
+if(m=line.match(/^add\s+quote\s*=\s*(.+)$/i)){
+bodyParts.push(
+`<blockquote class="mix-quote">${escapeHTML(m[1].trim())}</blockquote>`
+);
+return;
+}
+
+if(m=line.match(/^add\s+box\s*=\s*(.+)$/i)){
+bodyParts.push(
+`<div class="mix-box">${escapeHTML(m[1].trim())}</div>`
+);
+return;
+}
+
+if(m=line.match(/^add\s+emoji\s*=\s*(.+)$/i)){
+bodyParts.push(
+`<div class="mix-emoji">${escapeHTML(m[1].trim())}</div>`
+);
+return;
+}
+
+if(m=line.match(/^change\s+variable\s+([A-Za-z_][\w]*)\s*=\s*(.+)$/i)){
+const name=m[1];
+if(Object.prototype.hasOwnProperty.call(variables,name)){
+variables[name]=m[2].trim();
+}else{
+errors.push(`Line ${index+1}: can't change "${name}" — create it first with "create variable ${name} = ..."`);
+}
+return;
+}
+
+if(m=line.match(/^add\s+(\d+(?:\.\d+)?)\s+to\s+([A-Za-z_][\w]*)$/i)){
+const name=m[2];
+const amount=parseFloat(m[1]);
+const current=parseFloat(variables[name]);
+if(Object.prototype.hasOwnProperty.call(variables,name)&&!isNaN(current)){
+variables[name]=String(current+amount);
+}else{
+errors.push(`Line ${index+1}: "${name}" isn't a number variable yet.`);
+}
+return;
+}
+
+if(m=line.match(/^subtract\s+(\d+(?:\.\d+)?)\s+from\s+([A-Za-z_][\w]*)$/i)){
+const name=m[2];
+const amount=parseFloat(m[1]);
+const current=parseFloat(variables[name]);
+if(Object.prototype.hasOwnProperty.call(variables,name)&&!isNaN(current)){
+variables[name]=String(current-amount);
+}else{
+errors.push(`Line ${index+1}: "${name}" isn't a number variable yet.`);
+}
+return;
+}
+
+if(m=line.match(/^ask\s+(.+?)\s*=\s*(.+)$/i)){
+pendingQuestions.push({
+question:m[1].trim(),
+answer:m[2].trim()
+});
+return;
+}
+
+if(m=line.match(/^add\s+sound\s*=\s*(.+)$/i)){
+const rawName=m[1].trim();
+const name=rawName.toLowerCase();
+const customUrl=customSounds[rawName];
+if(customUrl){
+customSoundRefs[rawName]=customUrl;
+bodyParts.push(
+`<button class="mix-btn mix-sound-btn" data-action="customsound" data-sound="${escapeHTML(rawName)}">🎵 ${escapeHTML(rawName)}</button>`
+);
+}else if(MIX_SOUNDS.includes(name)){
+bodyParts.push(
+`<button class="mix-btn mix-sound-btn" data-action="sound" data-sound="${name}">🔊 ${name.charAt(0).toUpperCase()+name.slice(1)}</button>`
+);
+}else{
+bodyParts.push(
+`<div class="mix-box mix-sound-library"><strong>🔊 Sound Library</strong><br>${MIX_SOUNDS.join(", ")}${Object.keys(customSounds).length?`<br><br><strong>🎵 Your Imported Sounds</strong><br>${Object.keys(customSounds).join(", ")}`:""}</div>`
+);
+}
+return;
+}
+
+if(m=line.match(/^add\s+secret\s*=\s*(.+)$/i)){
+bodyParts.push(
+`<div class="mix-secret">🔒 Tap to reveal<span class="mix-secret-text">${escapeHTML(m[1].trim())}</span></div>`
+);
+return;
+}
+
+if(m=line.match(/^add\s+progress\s*=\s*(\d+(?:\.\d+)?)$/i)){
+const pct=Math.max(0,Math.min(100,parseFloat(m[1])));
+bodyParts.push(
+`<div class="mix-progress"><div class="mix-progress-fill" style="width:${pct}%"></div><span class="mix-progress-label">${pct}%</span></div>`
+);
+return;
+}
+
+if(m=line.match(/^add\s+rating\s*=\s*(\d+(?:\.\d+)?)$/i)){
+const stars=Math.max(0,Math.min(5,Math.round(parseFloat(m[1]))));
+bodyParts.push(
+`<div class="mix-rating">${"★".repeat(stars)}${"☆".repeat(5-stars)}</div>`
+);
+return;
+}
+
+if(m=line.match(/^add\s+badge\s*=\s*(.+)$/i)){
+bodyParts.push(
+`<span class="mix-badge">${escapeHTML(m[1].trim())}</span>`
+);
+return;
+}
+
+if(m=line.match(/^add\s+countdown\s*=\s*(\d+)$/i)){
+bodyParts.push(
+`<div class="mix-countdown" data-seconds="${m[1]}">${m[1]}</div>`
+);
+return;
+}
+
+if(m=line.match(/^import\s+sound\s*=\s*(.+)$/i)){
+return;
+}
+
+if(m=line.match(/^add\s+player\s*=\s*(.+)$/i)){
+playerCount++;
+lastPlayerId=playerCount;
+obstaclesByPlayer[playerCount]=[];
+if(renderMode==="3d"){
+bodyParts.push(
+`<div class="mix-playfield mix-playfield-3d" id="mixPlayfield${playerCount}" data-emoji="${escapeHTML(m[1].trim())}" data-obstacles="__MIX_OBS_${playerCount}__"><canvas id="mixCanvas${playerCount}"></canvas><div class="mix-player-tag">${escapeHTML(m[1].trim())} Player</div></div>`
+);
+}else{
+bodyParts.push(
+`<div class="mix-playfield" id="mixPlayfield${playerCount}"><div class="mix-player" id="mixPlayer${playerCount}">${escapeHTML(m[1].trim())}</div></div>`
+);
+}
+return;
+}
+
+if(m=line.match(/^add\s+joystick$/i)){
+if(!lastPlayerId){
+errors.push(`Line ${index+1}: "add joystick" needs a player first — add a "add player = [emoji]" line above it.`);
+return;
+}
+bodyParts.push(
+`<div class="mix-joystick" data-player="${lastPlayerId}"><div class="mix-joystick-knob"></div></div>`
+);
+return;
+}
+
+if(m=line.match(/^add\s+switch\s*=\s*(.+)$/i)){
+bodyParts.push(
+`<div class="mix-switch" data-on="false"><div class="mix-switch-track"><div class="mix-switch-knob"></div></div><span class="mix-switch-label">${escapeHTML(m[1].trim())}</span></div>`
+);
+return;
+}
+
+if(m=line.match(/^add\s+menu\s*=\s*(.+)$/i)){
+const items=m[1].split(",").map(s=>s.trim()).filter(Boolean);
+bodyParts.push(
+`<div class="mix-menu">${items.map(item=>`<button class="mix-menu-item">${escapeHTML(item)}</button>`).join("")}</div>`
+);
+return;
+}
+
+if(m=line.match(/^add\s+score\s*=\s*(.+)$/i)){
+bodyParts.push(
+`<div class="mix-score">🏆 Score: ${escapeHTML(m[1].trim())}</div>`
+);
+return;
+}
+
+if(m=line.match(/^add\s+healthbar\s*=\s*(\d+(?:\.\d+)?)$/i)){
+const pct=Math.max(0,Math.min(100,parseFloat(m[1])));
+bodyParts.push(
+`<div class="mix-healthbar"><div class="mix-healthbar-fill" style="width:${pct}%"></div><span class="mix-healthbar-label">❤️ ${pct}%</span></div>`
+);
+return;
+}
+
+if(m=line.match(/^add\s+obstacle\s*=\s*(.+)$/i)){
+if(!lastPlayerId){
+errors.push(`Line ${index+1}: "add obstacle" needs a player first — add a "add player = [emoji]" line above it.`);
+return;
+}
+if(renderMode==="3d"){
+obstaclesByPlayer[lastPlayerId].push({
+label:m[1].trim(),
+x:Number((Math.random()*14-7).toFixed(2)),
+z:Number((Math.random()*-12-4).toFixed(2))
+});
+}else{
+const left=Math.floor(Math.random()*70)+12;
+const top=Math.floor(Math.random()*55)+18;
+bodyParts.push(
+`<div class="mix-obstacle" data-player="${lastPlayerId}" style="left:${left}%;top:${top}%;">${escapeHTML(m[1].trim())}</div>`
+);
+}
+return;
+}
+
+if(m=line.match(/^add\s+gravity$/i)){
+if(!lastPlayerId){
+errors.push(`Line ${index+1}: "add gravity" needs a player first — add a "add player = [emoji]" line above it.`);
+return;
+}
+bodyParts.push(
+`<button class="mix-btn mix-jump-btn" data-player="${lastPlayerId}">⬆️ Jump</button>`
+);
+return;
+}
+
+if(m=line.match(/^add\s+button\s*=\s*(download|alert|back|reload|rotate|confetti|question|vibrate|fullscreen|share|print)$/i)){
+const action=m[1].toLowerCase();
+
+if(action==="question"){
+buttonCount++;
+const q=pendingQuestions.shift();
+if(!q){
+errors.push(`Line ${index+1}: "add button = question" needs a question first — add an "ask [question] = [answer]" line above it.`);
+return;
+}
+bodyParts.push(
+`<button class="mix-btn" data-action="question" data-question="${escapeHTML(q.question)}" data-answer="${escapeHTML(q.answer)}">❓ Question</button>`
+);
+return;
+}
+
+buttonCount++;
+const label=action.charAt(0).toUpperCase()+action.slice(1);
+bodyParts.push(
+`<button class="mix-btn" data-action="${action}" data-id="btn${buttonCount}">${label}</button>`
+);
+return;
+}
+
+if(m=line.match(/^add\s+button$/i)){
+buttonCount++;
+bodyParts.push(
+`<button class="mix-btn" data-action="none" data-id="btn${buttonCount}">Button ${buttonCount}</button>`
+);
+return;
+}
+
+errors.push(`Line ${index+1}: unrecognized MIX command — "${line}"`);
+
+});
+
+Object.keys(obstaclesByPlayer).forEach(function(pid){
+const json=escapeHTML(JSON.stringify(obstaclesByPlayer[pid]));
+for(let i=0;i<bodyParts.length;i++){
+bodyParts[i]=bodyParts[i].replace("__MIX_OBS_"+pid+"__",json);
+}
+});
+
+return{background,textColor,pageTitle,variables,bodyParts,errors,buttonCount,customSoundRefs,playerCount};
+
+}
+
+
+/* =========================================================
+   PREVIEW DOCUMENT BUILDER
+   Buttons in the generated preview are wired with real
+   addEventListener calls, not inline handlers.
+========================================================= */
+
+function buildPreviewHTML(source,meta){
+
+meta=meta||{type:"mix",renderMode:"2d"};
+
+const parsed=parseMixSource(source,getCustomSounds(),meta.renderMode);
+
+const varsJSON=JSON.stringify(parsed.variables,null,2);
+const customSoundsJSON=JSON.stringify(parsed.customSoundRefs);
+const isGame=meta.type==="game";
+const is3D=isGame&&meta.renderMode==="3d";
+
+return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>${escapeHTML(parsed.pageTitle)}</title>
+${is3D?'<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>':""}
+<style>
+*{box-sizing:border-box;}
+body{
+margin:0;
+min-height:100vh;
+background:${parsed.background};
+color:${parsed.textColor};
+font-family:Inter,system-ui,-apple-system,sans-serif;
+padding:28px 22px 60px;
+}
+body.mix-game{
+padding:0;
+height:100dvh;
+overflow:hidden;
+display:flex;
+flex-direction:column;
+}
+body.mix-game #mixRoot{
+display:flex;
+flex-direction:column;
+flex:1;
+min-height:0;
+max-width:none;
+width:100%;
+margin:0;
+padding:0;
+transition:none;
+}
+body.mix-game .mix-heading{
+margin:0;
+padding:10px 14px 0;
+font-size:17px;
+}
+body.mix-game .mix-text{
+margin:0;
+padding:2px 14px 6px;
+font-size:12px;
+opacity:.75;
+}
+body.mix-game .mix-score,
+body.mix-game .mix-healthbar,
+body.mix-game .mix-badge{
+margin:4px 14px;
+max-width:none;
+}
+body.mix-game .mix-playfield{
+flex:1;
+min-height:0;
+width:100%;
+border-radius:0;
+border:0;
+border-top:1px solid #ffffff14;
+border-bottom:1px solid #ffffff14;
+margin:6px 0;
+}
+body.mix-game .mix-joystick,
+body.mix-game .mix-switch,
+body.mix-game .mix-menu,
+body.mix-game .mix-jump-btn,
+body.mix-game .mix-btn{
+margin:4px 14px;
+}
+body.mix-game .mix-joystick{
+align-self:center;
+margin-bottom:10px;
+}
+#mixRoot{
+max-width:640px;
+margin:0 auto;
+transition:transform .45s cubic-bezier(.2,.8,.2,1);
+}
+.mix-heading{
+font-size:26px;
+font-weight:900;
+margin:0 0 14px;
+letter-spacing:.3px;
+}
+.mix-text{
+font-size:15px;
+line-height:1.65;
+margin:0 0 14px;
+opacity:.92;
+}
+.mix-var-name{
+font-weight:800;
+opacity:1;
+}
+.mix-line{
+border:0;
+border-top:1px solid currentColor;
+opacity:.25;
+margin:18px 0;
+}
+.mix-space{
+height:22px;
+}
+.mix-image{
+max-width:100%;
+border-radius:10px;
+display:block;
+margin:0 0 14px;
+}
+.mix-link{
+display:inline-block;
+color:inherit;
+text-decoration:underline;
+opacity:.9;
+margin:0 0 14px;
+}
+.mix-subheading{
+font-size:19px;
+font-weight:800;
+margin:4px 0 10px;
+opacity:.95;
+}
+.mix-quote{
+border-left:3px solid currentColor;
+opacity:.85;
+padding:8px 14px;
+margin:0 0 14px;
+font-style:italic;
+font-size:14px;
+}
+.mix-box{
+padding:14px 16px;
+border-radius:10px;
+background:#ffffff12;
+border:1px solid #ffffff22;
+margin:0 0 14px;
+font-size:14px;
+}
+.mix-emoji{
+font-size:44px;
+line-height:1;
+margin:0 0 14px;
+}
+.confetti-piece{
+position:fixed;
+top:-10px;
+width:8px;
+height:8px;
+border-radius:2px;
+pointer-events:none;
+z-index:9999;
+animation:mixConfettiFall linear forwards;
+}
+@keyframes mixConfettiFall{
+to{
+transform:translateY(110vh) rotate(540deg);
+opacity:.2;
+}
+}
+@keyframes mixShake{
+0%,100%{transform:translateX(0);}
+10%,30%,50%,70%,90%{transform:translateX(-10px);}
+20%,40%,60%,80%{transform:translateX(10px);}
+}
+.mix-shake{
+animation:mixShake .5s ease-in-out 0s 4;
+}
+.mix-sound-library{
+font-size:12px;
+line-height:1.6;
+}
+.mix-secret{
+padding:12px 14px;
+border-radius:10px;
+background:#ffffff10;
+border:1px dashed #ffffff30;
+margin:0 0 14px;
+cursor:pointer;
+font-size:13px;
+}
+.mix-secret-text{
+display:none;
+margin-left:8px;
+font-weight:700;
+}
+.mix-secret.revealed{
+background:#00eaff15;
+}
+.mix-secret.revealed .mix-secret-text{
+display:inline;
+}
+.mix-progress{
+position:relative;
+height:22px;
+border-radius:11px;
+background:#ffffff14;
+overflow:hidden;
+margin:0 0 14px;
+}
+.mix-progress-fill{
+height:100%;
+background:linear-gradient(90deg,#00eaff,#52f28a);
+}
+.mix-progress-label{
+position:absolute;
+inset:0;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:11px;
+font-weight:800;
+}
+.mix-rating{
+font-size:22px;
+color:#ffe66d;
+margin:0 0 14px;
+letter-spacing:2px;
+}
+.mix-badge{
+display:inline-block;
+padding:4px 10px;
+border-radius:20px;
+background:linear-gradient(135deg,#a970ff,#ff5ca8);
+font-size:11px;
+font-weight:800;
+margin:0 6px 14px 0;
+}
+.mix-countdown{
+font-size:34px;
+font-weight:900;
+font-family:monospace;
+margin:0 0 14px;
+color:#ffe66d;
+}
+.mix-playfield{
+position:relative;
+width:100%;
+height:180px;
+border-radius:14px;
+background:#ffffff0c;
+border:1px solid #ffffff20;
+margin:0 0 14px;
+overflow:hidden;
+}
+.mix-player{
+position:absolute;
+left:50%;
+top:50%;
+transform:translate(-50%,-50%);
+font-size:34px;
+line-height:1;
+transition:left .05s linear,top .05s linear;
+user-select:none;
+}
+.mix-joystick{
+width:110px;
+height:110px;
+border-radius:50%;
+background:#ffffff10;
+border:1px solid #ffffff25;
+position:relative;
+margin:0 0 14px;
+touch-action:none;
+}
+.mix-joystick-knob{
+position:absolute;
+width:46px;
+height:46px;
+border-radius:50%;
+background:linear-gradient(135deg,#00eaff,#5da9ff);
+left:50%;
+top:50%;
+transform:translate(-50%,-50%);
+}
+.mix-switch{
+display:flex;
+align-items:center;
+gap:10px;
+margin:0 0 14px;
+cursor:pointer;
+user-select:none;
+}
+.mix-switch-track{
+width:46px;
+height:26px;
+border-radius:13px;
+background:#ffffff20;
+position:relative;
+transition:.2s;
+}
+.mix-switch-knob{
+position:absolute;
+width:20px;
+height:20px;
+border-radius:50%;
+background:#fff;
+top:3px;
+left:3px;
+transition:.2s;
+}
+.mix-switch[data-on="true"] .mix-switch-track{
+background:linear-gradient(135deg,#52f28a,#00bd68);
+}
+.mix-switch[data-on="true"] .mix-switch-knob{
+left:23px;
+}
+.mix-switch-label{
+font-size:13px;
+font-weight:700;
+}
+.mix-menu{
+display:flex;
+flex-direction:column;
+gap:6px;
+margin:0 0 14px;
+}
+.mix-menu-item{
+padding:11px 14px;
+border-radius:9px;
+border:1px solid #ffffff22;
+background:#ffffff0c;
+color:inherit;
+font-size:13px;
+font-weight:700;
+text-align:left;
+cursor:pointer;
+}
+.mix-score{
+display:inline-block;
+padding:8px 14px;
+border-radius:10px;
+background:linear-gradient(135deg,#ffe66d22,#ff9c4522);
+border:1px solid #ffe66d44;
+font-weight:800;
+font-size:13px;
+margin:0 0 14px;
+}
+.mix-healthbar{
+position:relative;
+height:22px;
+border-radius:11px;
+background:#ffffff14;
+overflow:hidden;
+margin:0 0 14px;
+max-width:260px;
+}
+.mix-healthbar-fill{
+height:100%;
+background:linear-gradient(90deg,#ff5260,#ff9c45);
+}
+.mix-healthbar-label{
+position:absolute;
+inset:0;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:11px;
+font-weight:800;
+}
+.mix-obstacle{
+position:absolute;
+font-size:24px;
+line-height:1;
+transition:opacity .3s;
+}
+@keyframes mixJump{
+0%{transform:translate(-50%,-50%) translateY(0);}
+40%{transform:translate(-50%,-50%) translateY(-40px);}
+100%{transform:translate(-50%,-50%) translateY(0);}
+}
+.mix-player.jumping{
+animation:mixJump .5s ease;
+}
+.mix-playfield-3d{
+padding:0;
+position:relative;
+overflow:hidden;
+}
+.mix-playfield-3d canvas{
+width:100%;
+height:100%;
+display:block;
+}
+.mix-player-tag{
+position:absolute;
+top:10px;
+left:10px;
+padding:5px 10px;
+border-radius:8px;
+background:#00000060;
+backdrop-filter:blur(4px);
+font-size:11px;
+font-weight:800;
+z-index:5;
+}
+.mix-server{
+display:inline-flex;
+align-items:center;
+gap:8px;
+padding:8px 13px;
+border-radius:20px;
+background:#00000030;
+font-size:12px;
+font-weight:800;
+letter-spacing:.3px;
+margin:2px 0 16px;
+}
+.mix-server .dot{
+width:8px;
+height:8px;
+border-radius:50%;
+}
+.mix-server.online .dot{
+background:#52f28a;
+box-shadow:0 0 8px #52f28a;
+}
+.mix-server.offline .dot{
+background:#ff5260;
+box-shadow:0 0 8px #ff5260;
+}
+.mix-btn{
+display:inline-block;
+margin:6px 8px 6px 0;
+padding:12px 18px;
+border:0;
+border-radius:10px;
+background:linear-gradient(135deg,#00eaff,#5da9ff);
+color:#06121a;
+font-weight:800;
+font-size:13px;
+cursor:pointer;
+transition:.15s;
+}
+.mix-btn:active{
+transform:scale(.94);
+}
+#mixConsole{
+margin-top:26px;
+padding:10px 12px;
+border-radius:8px;
+background:#00000035;
+font:11px/1.6 monospace;
+color:#8ee7ff;
+white-space:pre-wrap;
+}
+</style>
+</head>
+<body class="${isGame?"mix-game":""}">
+<div id="mixRoot">
+${parsed.bodyParts.length?parsed.bodyParts.join("\n"):'<p class="mix-text">No renderable MIX elements yet.</p>'}
+${parsed.errors.length?`<div id="mixConsole">${parsed.errors.map(escapeHTML).join("\\n")}</div>`:""}
+</div>
+<script>
+const MIX_VARS=${varsJSON};
+console.log("MIX variables:",MIX_VARS);
+
+const MIX_CUSTOM_SOUNDS=${customSoundsJSON};
+
+const MIX_SOURCE=${JSON.stringify(source)};
+
+const MIX_SOUND_MAP={
+ding:{f:880,d:.2,type:"sine"},
+buzz:{f:120,d:.25,type:"sawtooth"},
+coin:{f:988,d:.12,type:"square"},
+pop:{f:600,d:.08,type:"sine"},
+success:{f:660,d:.15,type:"sine"},
+fail:{f:150,d:.3,type:"sawtooth"},
+click:{f:1000,d:.04,type:"square"},
+chime:{f:1320,d:.35,type:"sine"},
+laser:{f:1800,d:.15,type:"sawtooth"},
+drum:{f:90,d:.18,type:"square"}
+};
+
+function playSound(name){
+try{
+const ctx=new (window.AudioContext||window.webkitAudioContext)();
+const cfg=MIX_SOUND_MAP[name]||MIX_SOUND_MAP.click;
+const osc=ctx.createOscillator();
+const gain=ctx.createGain();
+osc.type=cfg.type;
+osc.frequency.setValueAtTime(cfg.f,ctx.currentTime);
+gain.gain.setValueAtTime(.06,ctx.currentTime);
+gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+cfg.d);
+osc.connect(gain);
+gain.connect(ctx.destination);
+osc.start();
+osc.stop(ctx.currentTime+cfg.d);
+}catch(e){}
+}
+
+let rotation=0;
+const root=document.getElementById("mixRoot");
+
+document.querySelectorAll(".mix-btn").forEach(function(btn){
+
+btn.addEventListener("click",function(){
+
+const action=btn.dataset.action;
+
+if(action==="download"){
+const blob=new Blob([document.documentElement.outerHTML],{type:"text/html"});
+const url=URL.createObjectURL(blob);
+const a=document.createElement("a");
+a.href=url;
+a.download="mix-preview.html";
+document.body.appendChild(a);
+a.click();
+a.remove();
+URL.revokeObjectURL(url);
+}else if(action==="alert"){
+alert("MIX Alert triggered!");
+}else if(action==="back"){
+history.back();
+}else if(action==="reload"){
+location.reload();
+}else if(action==="rotate"){
+rotation=(rotation+90)%360;
+root.style.transform="rotate("+rotation+"deg)";
+}else if(action==="confetti"){
+const colors=["#00eaff","#a970ff","#ff5ca8","#ffe66d","#52f28a","#ff9c45"];
+for(let i=0;i<40;i++){
+const piece=document.createElement("div");
+piece.className="confetti-piece";
+piece.style.left=Math.random()*100+"vw";
+piece.style.background=colors[Math.floor(Math.random()*colors.length)];
+piece.style.animationDuration=(1.2+Math.random()*1.2)+"s";
+document.body.appendChild(piece);
+setTimeout(function(){piece.remove();},2600);
+}
+}else if(action==="sound"){
+playSound(btn.dataset.sound);
+}else if(action==="customsound"){
+const url=MIX_CUSTOM_SOUNDS[btn.dataset.sound];
+if(url){
+const audio=new Audio(url);
+audio.play().catch(function(){});
+}
+}else if(action==="question"){
+const q=btn.dataset.question;
+const correctAnswer=(btn.dataset.answer||"").trim().toLowerCase();
+const userAnswer=prompt(q);
+if(userAnswer===null)return;
+if(userAnswer.trim().toLowerCase()===correctAnswer){
+playSound("success");
+alert("✅ Correct!");
+}else{
+playSound("fail");
+alert("❌ Wrong — watch the screen shake!");
+document.body.classList.add("mix-shake");
+setTimeout(function(){
+document.body.classList.remove("mix-shake");
+},2000);
+}
+}else if(action==="vibrate"){
+if(navigator.vibrate){navigator.vibrate(200);}
+}else if(action==="fullscreen"){
+if(document.fullscreenElement){
+document.exitFullscreen();
+}else if(document.documentElement.requestFullscreen){
+document.documentElement.requestFullscreen().catch(function(){});
+}
+}else if(action==="share"){
+const shareCode="MIX1:"+btoa(unescape(encodeURIComponent(JSON.stringify({name:document.title,code:MIX_SOURCE}))));
+if(navigator.clipboard&&navigator.clipboard.writeText){
+navigator.clipboard.writeText(shareCode).then(function(){
+alert("📋 Share code copied! Send it to a friend.");
+}).catch(function(){
+prompt("Copy this share code:",shareCode);
+});
+}else{
+prompt("Copy this share code:",shareCode);
+}
+}else if(action==="print"){
+window.print();
+}
+
+});
+
+});
+
+document.querySelectorAll(".mix-secret").forEach(function(el){
+el.addEventListener("click",function(){
+el.classList.toggle("revealed");
+});
+});
+
+document.querySelectorAll(".mix-countdown").forEach(function(el){
+let remaining=parseInt(el.dataset.seconds,10)||0;
+el.textContent=remaining;
+const timer=setInterval(function(){
+remaining--;
+if(remaining<=0){
+el.textContent="⏰ Done!";
+clearInterval(timer);
+}else{
+el.textContent=remaining;
+}
+},1000);
+});
+
+document.querySelectorAll(".mix-switch").forEach(function(el){
+el.addEventListener("click",function(){
+const on=el.dataset.on==="true";
+el.dataset.on=on?"false":"true";
+playSound(on?"click":"success");
+});
+});
+
+document.querySelectorAll(".mix-menu-item").forEach(function(el){
+el.addEventListener("click",function(){
+playSound("click");
+alert("You picked: "+el.textContent);
+});
+});
+
+document.querySelectorAll(".mix-obstacle").forEach(function(ob){
+const field=document.getElementById("mixPlayfield"+ob.dataset.player);
+if(field)field.appendChild(ob);
+});
+
+if(window.THREE){
+document.querySelectorAll(".mix-playfield-3d").forEach(function(field){
+const playerId=field.id.replace("mixPlayfield","");
+const canvas=field.querySelector("canvas");
+let obstacles=[];
+try{obstacles=JSON.parse(field.dataset.obstacles||"[]");}catch(e){}
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x0b0e14);
+scene.fog=new THREE.Fog(0x0b0e14,10,26);
+
+const camera=new THREE.PerspectiveCamera(60,field.clientWidth/Math.max(1,field.clientHeight),0.1,100);
+const renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true});
+renderer.setSize(field.clientWidth,field.clientHeight);
+
+scene.add(new THREE.AmbientLight(0xffffff,0.6));
+const light=new THREE.DirectionalLight(0xffffff,0.8);
+light.position.set(5,10,5);
+scene.add(light);
+
+const ground=new THREE.Mesh(
+new THREE.PlaneGeometry(60,60),
+new THREE.MeshStandardMaterial({color:0x151b25})
+);
+ground.rotation.x=-Math.PI/2;
+scene.add(ground);
+scene.add(new THREE.GridHelper(60,60,0x2a3346,0x1a2030));
+
+const playerMesh=new THREE.Mesh(
+new THREE.SphereGeometry(0.6,20,20),
+new THREE.MeshStandardMaterial({color:0x00eaff,emissive:0x004a55})
+);
+playerMesh.position.set(0,0.6,0);
+scene.add(playerMesh);
+
+const obstacleMeshes=obstacles.map(function(ob){
+const mesh=new THREE.Mesh(
+new THREE.BoxGeometry(1,1,1),
+new THREE.MeshStandardMaterial({color:0xff5260})
+);
+mesh.position.set(ob.x,0.5,ob.z);
+mesh.userData.hit=false;
+scene.add(mesh);
+return mesh;
+});
+
+let targetX=0,targetZ=0,jumpT=0,jumping=false;
+
+function animate(){
+requestAnimationFrame(animate);
+playerMesh.position.x+=(targetX-playerMesh.position.x)*0.15;
+playerMesh.position.z+=(targetZ-playerMesh.position.z)*0.15;
+if(jumping){
+jumpT+=0.14;
+playerMesh.position.y=0.6+Math.sin(Math.min(jumpT,Math.PI))*1.2;
+if(jumpT>=Math.PI){jumping=false;jumpT=0;playerMesh.position.y=0.6;}
+}
+camera.position.x=playerMesh.position.x;
+camera.position.y=6;
+camera.position.z=playerMesh.position.z+9;
+camera.lookAt(playerMesh.position.x,0.5,playerMesh.position.z);
+obstacleMeshes.forEach(function(mesh){
+if(mesh.userData.hit)return;
+const dist=Math.hypot(playerMesh.position.x-mesh.position.x,playerMesh.position.z-mesh.position.z);
+if(dist<1.1){
+mesh.userData.hit=true;
+mesh.material.transparent=true;
+mesh.material.opacity=0.2;
+playSound("fail");
+document.body.classList.add("mix-shake");
+setTimeout(function(){document.body.classList.remove("mix-shake");},2000);
+const fill=document.querySelector(".mix-healthbar-fill");
+const label=document.querySelector(".mix-healthbar-label");
+if(fill){
+const cur=parseFloat(fill.style.width)||100;
+const next=Math.max(0,cur-20);
+fill.style.width=next+"%";
+if(label)label.textContent="❤️ "+next+"%";
+}
+}
+});
+renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener("resize",function(){
+renderer.setSize(field.clientWidth,field.clientHeight);
+camera.aspect=field.clientWidth/Math.max(1,field.clientHeight);
+camera.updateProjectionMatrix();
+});
+
+window["mix3dMove"+playerId]=function(dx,dz){
+targetX=Math.max(-12,Math.min(12,targetX+dx*0.4));
+targetZ=Math.max(-16,Math.min(4,targetZ+dz*0.4));
+};
+window["mix3dJump"+playerId]=function(){
+if(!jumping){jumping=true;jumpT=0;playSound("pop");}
+};
+});
+}
+
+document.querySelectorAll(".mix-joystick").forEach(function(stick){
+const playerId=stick.dataset.player;
+const player=document.getElementById("mixPlayer"+playerId);
+const field=document.getElementById("mixPlayfield"+playerId);
+const knob=stick.querySelector(".mix-joystick-knob");
+const is3dPlayer=!!window["mix3dMove"+playerId];
+if(!field||(!player&&!is3dPlayer))return;
+
+let px=50,py=50;
+let dragging=false;
+
+function setKnob(dx,dy){
+knob.style.transform="translate("+(-50+dx*40)+"%,"+(-50+dy*40)+"%)";
+}
+
+function checkCollisions(){
+field.querySelectorAll(".mix-obstacle").forEach(function(ob){
+if(ob.dataset.hit==="true")return;
+const obLeft=parseFloat(ob.style.left);
+const obTop=parseFloat(ob.style.top);
+const dist=Math.hypot(px-obLeft,py-obTop);
+if(dist<9){
+ob.dataset.hit="true";
+ob.style.opacity=".25";
+playSound("fail");
+document.body.classList.add("mix-shake");
+setTimeout(function(){document.body.classList.remove("mix-shake");},2000);
+const fill=document.querySelector(".mix-healthbar-fill");
+const label=document.querySelector(".mix-healthbar-label");
+if(fill){
+const cur=parseFloat(fill.style.width)||100;
+const next=Math.max(0,cur-20);
+fill.style.width=next+"%";
+if(label)label.textContent="❤️ "+next+"%";
+}
+}
+});
+}
+
+function movePlayer(dx,dy){
+if(is3dPlayer){
+window["mix3dMove"+playerId](dx,dy);
+return;
+}
+px=Math.max(4,Math.min(96,px+dx*4));
+py=Math.max(8,Math.min(92,py+dy*4));
+player.style.left=px+"%";
+player.style.top=py+"%";
+checkCollisions();
+}
+
+function onMove(clientX,clientY){
+const rect=stick.getBoundingClientRect();
+let dx=(clientX-(rect.left+rect.width/2))/(rect.width/2);
+let dy=(clientY-(rect.top+rect.height/2))/(rect.height/2);
+const mag=Math.min(1,Math.sqrt(dx*dx+dy*dy));
+const angle=Math.atan2(dy,dx);
+dx=Math.cos(angle)*mag;
+dy=Math.sin(angle)*mag;
+setKnob(dx,dy);
+movePlayer(dx,dy);
+}
+
+function endDrag(){
+dragging=false;
+setKnob(0,0);
+}
+
+stick.addEventListener("pointerdown",function(e){
+dragging=true;
+onMove(e.clientX,e.clientY);
+});
+window.addEventListener("pointermove",function(e){
+if(dragging)onMove(e.clientX,e.clientY);
+});
+window.addEventListener("pointerup",endDrag);
+window.addEventListener("pointercancel",endDrag);
+});
+
+document.querySelectorAll(".mix-jump-btn").forEach(function(btn){
+btn.addEventListener("click",function(){
+const pid=btn.dataset.player;
+if(window["mix3dJump"+pid]){
+window["mix3dJump"+pid]();
+return;
+}
+const player=document.getElementById("mixPlayer"+pid);
+if(!player||player.classList.contains("jumping"))return;
+player.classList.add("jumping");
+playSound("pop");
+setTimeout(function(){player.classList.remove("jumping");},500);
+});
+});
+<\/script>
+</body>
+</html>`;
+
+}
+
+
+/* =========================================================
+   EDITOR EVENTS
+========================================================= */
+
+function updateStatusPos(){
+
+const pos=code.selectionStart;
+const before=code.value.slice(0,pos);
+const linesBefore=before.split("\n");
+const line=linesBefore.length;
+const col=linesBefore[linesBefore.length-1].length+1;
+
+document.getElementById("statusPos").textContent=
+`Ln ${line}, Col ${col}`;
+
+}
+
+code.addEventListener("input",()=>{
+
+updateEditor();
+typeSound();
+updateStatusPos();
+
+});
+
+code.addEventListener("keyup",updateStatusPos);
+code.addEventListener("click",updateStatusPos);
+
+updateStatusPos();
+
+code.addEventListener("scroll",()=>{
+
+highlight.scrollTop=code.scrollTop;
+highlight.scrollLeft=code.scrollLeft;
+
+lineNumbers.style.transform=
+`translateY(${-code.scrollTop}px)`;
+
+});
+
+code.addEventListener("keydown",event=>{
+
+if(event.key==="Tab"){
+
+event.preventDefault();
+
+const start=code.selectionStart;
+const end=code.selectionEnd;
+
+code.value=
+code.value.slice(0,start)
++"  "
++code.value.slice(end);
+
+code.selectionStart=
+code.selectionEnd=
+start+2;
+
+updateEditor();
+typeSound();
+
+}
+
+});
+
+
+/* =========================================================
+   FILE SWITCHING (sidebar)
+========================================================= */
+
+document.querySelectorAll(".file").forEach(fileBtn=>{
+
+fileBtn.addEventListener("click",()=>{
+
+clickSound();
+
+const name=fileBtn.dataset.file;
+
+FILE_TEMPLATES[currentFile]=code.value;
+
+currentFile=name;
+
+code.value=FILE_TEMPLATES[name]||"";
+
+updateEditor();
+
+document.querySelectorAll(".file").forEach(f=>
+f.classList.toggle("active",f===fileBtn)
+);
+
+activeTabName.textContent=name;
+
+consoleLog(`Switched to ${name}`);
+
+if(window.innerWidth<=700){
+sidebar.classList.remove("open");
+}
+
+});
+
+});
+
+
+/* =========================================================
+   MENU
+========================================================= */
+
+document.getElementById("menuBtn").onclick=(event)=>{
+
+event.stopPropagation();
+
+clickSound();
+
+menu.classList.toggle("open");
+
+if(window.innerWidth<=700){
+sidebar.classList.toggle("open");
+}
+
+};
+
+document.addEventListener("click",(event)=>{
+
+if(
+!menu.contains(event.target)&&
+event.target.id!=="menuBtn"
+){
+menu.classList.remove("open");
+}
+
+});
+
+
+/* =========================================================
+   MODALS
+========================================================= */
+
+function openModal(id){
+
+document.getElementById(id).classList.add("open");
+
+}
+
+document.getElementById("helpBtn").onclick=()=>{
+clickSound();
+openModal("helpModal");
+};
+
+document.getElementById("menuHelp").onclick=()=>{
+menu.classList.remove("open");
+clickSound();
+openModal("helpModal");
+};
+
+document
+.querySelectorAll("[data-close]")
+.forEach(button=>{
+
+button.onclick=()=>{
+
+clickSound();
+
+document
+.getElementById(button.dataset.close)
+.classList.remove("open");
+
+};
+
+});
+
+document
+.querySelectorAll(".modal")
+.forEach(modal=>{
+
+modal.addEventListener("click",(event)=>{
+
+if(event.target===modal){
+modal.classList.remove("open");
+}
+
+});
+
+});
+
+
+/* =========================================================
+   MIX LIBRARY — "Your Mixes" (saved projects, in localStorage)
+========================================================= */
+
+function loadLibrary(){
+
+try{
+return JSON.parse(localStorage.getItem(LIBRARY_KEY))||[];
+}catch(error){
+return [];
+}
+
+}
+
+function saveLibrary(list){
+
+localStorage.setItem(LIBRARY_KEY,JSON.stringify(list));
+
+}
+
+function formatDate(timestamp){
+
+const d=new Date(timestamp);
+
+return d.toLocaleDateString(undefined,{month:"short",day:"numeric"})+
+" · "+
+d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+
+}
+
+function renderMixList(){
+
+const list=loadLibrary();
+const container=document.getElementById("mixList");
+
+if(!list.length){
+container.innerHTML='<div class="menu-empty">No mixes yet — tap "+ New Mix" to start.</div>';
+return;
+}
+
+container.innerHTML=list
+.slice()
+.sort((a,b)=>b.updatedAt-a.updatedAt)
+.map(item=>`
+<div class="mix-card">
+<div class="mix-card-info">
+<div class="mix-card-name">${item.type==="game"?(item.renderMode==="3d"?"🧊":"🎮"):"📄"} ${escapeHTML(item.name)}</div>
+<div class="mix-card-date">${formatDate(item.updatedAt)}</div>
+</div>
+<div class="mix-card-actions">
+<button class="action-btn" data-open="${item.id}">Open</button>
+<button class="icon-btn" data-delete="${item.id}">🗑</button>
+</div>
+</div>
+`).join("");
+
+}
+
+function openProject(id){
+
+const list=loadLibrary();
+const project=list.find(p=>p.id===id);
+
+if(!project)return;
+
+currentProjectId=id;
+currentFile="main.mix";
+
+code.value=project.code;
+FILE_TEMPLATES["main.mix"]=project.code;
+
+updateEditor();
+updateStatusPos();
+
+document.querySelectorAll(".file").forEach(f=>
+f.classList.toggle("active",f.dataset.file==="main.mix")
+);
+
+activeTabName.textContent=project.name+".mix";
+
+document.getElementById("mainMenu").style.display="none";
+document.getElementById("appRoot").style.display="flex";
+
+consoleLog(`Opened "${project.name}"`);
+
+}
+
+function createNewMix(type,renderMode){
+
+type=type||"mix";
+renderMode=renderMode||"2d";
+
+const name=prompt(
+type==="game"?"Name your new game:":"Name your new mix:",
+type==="game"?"Untitled Game":"Untitled Mix"
+);
+
+if(!name)return;
+
+const list=loadLibrary();
+const id="mix_"+Date.now();
+const cleanName=name.trim()||(type==="game"?"Untitled Game":"Untitled Mix");
+
+const starter=type==="game"
+?`change background color = #0c0f1a\nmix like H easy ${cleanName}\nsay Use the joystick to move your player\n\nadd score = 0\nadd healthbar = 100\n\nadd player = 🚀\nadd joystick\nadd gravity\nadd obstacle = 🪨\nadd obstacle = 🪨\n\nadd switch = Sound On\nadd menu = Start, Pause, Restart`
+:`change background color = #10131a\nsay New MIX project\nmix like H easy ${cleanName}`;
+
+list.push({
+id,
+name:cleanName,
+type,
+renderMode,
+code:starter,
+updatedAt:Date.now()
+});
+
+saveLibrary(list);
+
+openProject(id);
+
+}
+
+function saveCurrentProject(){
+
+if(!currentProjectId)return;
+
+const list=loadLibrary();
+const project=list.find(p=>p.id===currentProjectId);
+
+if(project){
+project.code=code.value;
+project.updatedAt=Date.now();
+saveLibrary(list);
+}
+
+}
+
+function backToMenu(){
+
+saveCurrentProject();
+
+document.getElementById("appRoot").style.display="none";
+document.getElementById("mainMenu").style.display="block";
+
+renderMixList();
+
+}
+
+document.getElementById("newMixBtn").onclick=()=>{
+clickSound();
+createNewMix("mix");
+};
+
+document.getElementById("newGameBtn").onclick=()=>{
+clickSound();
+openModal("gameTypeModal");
+};
+
+document.getElementById("choose2dBtn").onclick=()=>{
+document.getElementById("gameTypeModal").classList.remove("open");
+clickSound();
+createNewMix("game","2d");
+};
+
+document.getElementById("choose3dBtn").onclick=()=>{
+document.getElementById("gameTypeModal").classList.remove("open");
+clickSound();
+createNewMix("game","3d");
+};
+
+document.getElementById("mixList").addEventListener("click",(event)=>{
+
+const openId=event.target.dataset.open;
+const delId=event.target.dataset.delete;
+
+if(openId){
+
+clickSound();
+openProject(openId);
+
+}else if(delId){
+
+clickSound();
+
+if(confirm("Delete this mix? This can't be undone.")){
+
+const list=loadLibrary().filter(p=>p.id!==delId);
+
+saveLibrary(list);
+renderMixList();
+
+successSound();
+showToast("🗑 Mix deleted");
+
+}
+
+}
+
+});
+
+document.getElementById("menuMyMixes").onclick=()=>{
+menu.classList.remove("open");
+clickSound();
+backToMenu();
+};
+
+
+/* =========================================================
+   COLLABORATE — share codes (async, copy-paste based).
+   There's no server here, so this can't sync live between
+   people — it packages a mix into a text code that a friend
+   pastes in to get their own independent copy of it.
+========================================================= */
+
+function encodeShareCode(name,codeStr){
+
+const payload=JSON.stringify({name:name,code:codeStr});
+
+return "MIX1:"+btoa(unescape(encodeURIComponent(payload)));
+
+}
+
+function decodeShareCode(str){
+
+if(!str.startsWith("MIX1:")){
+throw new Error("Not a MIX share code");
+}
+
+const payload=decodeURIComponent(escape(atob(str.slice(5))));
+
+return JSON.parse(payload);
+
+}
+
+function populateShareCode(){
+
+const box=document.getElementById("shareCodeBox");
+
+if(currentProjectId){
+
+const list=loadLibrary();
+const project=list.find(p=>p.id===currentProjectId);
+
+if(project){
+box.value=encodeShareCode(project.name,code.value);
+return;
+}
+
+}
+
+box.value="";
+
+}
+
+function openCollabModal(){
+populateShareCode();
+openModal("collabModal");
+}
+
+document.getElementById("collabBtn").onclick=()=>{
+clickSound();
+openCollabModal();
+};
+
+document.getElementById("menuCollab").onclick=()=>{
+menu.classList.remove("open");
+clickSound();
+openCollabModal();
+};
+
+document.getElementById("shareCopyBtn").onclick=()=>{
+
+clickSound();
+
+const val=document.getElementById("shareCodeBox").value;
+
+if(!val){
+showToast("⚠ Open a mix first");
+return;
+}
+
+if(navigator.clipboard&&navigator.clipboard.writeText){
+
+navigator.clipboard.writeText(val).then(()=>{
+successSound();
+showToast("📋 Share code copied");
+}).catch(()=>{
+showToast("⚠ Couldn't copy — select and copy manually");
+});
+
+}else{
+
+showToast("⚠ Clipboard not available — select and copy manually");
+
+}
+
+};
+
+document.getElementById("importBtn").onclick=()=>{
+
+clickSound();
+
+const raw=document.getElementById("importCodeBox").value.trim();
+
+if(!raw){
+showToast("⚠ Paste a share code first");
+return;
+}
+
+try{
+
+const data=decodeShareCode(raw);
+const list=loadLibrary();
+const id="mix_"+Date.now();
+
+list.push({
+id,
+name:data.name||"Imported Mix",
+code:data.code||"",
+updatedAt:Date.now()
+});
+
+saveLibrary(list);
+
+successSound();
+
+document.getElementById("importCodeBox").value="";
+
+document.getElementById("collabModal").classList.remove("open");
+
+consoleLog(`Imported "${data.name||"Imported Mix"}"`);
+
+showToast("📥 Mix imported");
+
+if(document.getElementById("mainMenu").style.display!=="none"){
+renderMixList();
+}
+
+}catch(error){
+
+errorSound();
+
+showToast("⚠ That doesn't look like a valid MIX share code");
+
+}
+
+};
+
+
+/* =========================================================
+   SPLASH SCREEN → MAIN MENU
+========================================================= */
+
+/* =========================================================
+   PROFILE — local only. There's no server here, so this
+   can't verify a real Google or GitHub account; it's just
+   a name + avatar stored on this device.
+========================================================= */
+
+const AVATAR_EMOJIS=["🦊","🐼","🐸","🐙","🦄","🐝","🐻","🐨","🦁","🐯"];
+let selectedAvatar=AVATAR_EMOJIS[0];
+
+function loadProfile(){
+try{
+return JSON.parse(localStorage.getItem("MIX_PROFILE"));
+}catch(error){
+return null;
+}
+}
+
+function saveProfile(profile){
+localStorage.setItem("MIX_PROFILE",JSON.stringify(profile));
+}
+
+function renderAvatarPicker(){
+const picker=document.getElementById("avatarPicker");
+picker.innerHTML=AVATAR_EMOJIS.map(e=>
+`<button class="avatar-option${e===selectedAvatar?" selected":""}" data-avatar="${e}">${e}</button>`
+).join("");
+}
+
+document.getElementById("avatarPicker").addEventListener("click",(event)=>{
+const btn=event.target.closest(".avatar-option");
+if(!btn)return;
+selectedAvatar=btn.dataset.avatar;
+renderAvatarPicker();
+clickSound();
+});
+
+document.getElementById("loginContinueBtn").onclick=()=>{
+clickSound();
+const name=document.getElementById("loginName").value.trim()||"Explorer";
+saveProfile({name,avatar:selectedAvatar});
+document.getElementById("loginScreen").style.display="none";
+successSound();
+showMainMenu();
+};
+
+function renderProfileRow(){
+const profile=loadProfile();
+const row=document.getElementById("profileRow");
+if(!profile){
+row.innerHTML="";
+return;
+}
+row.innerHTML=
+`<span>${profile.avatar} Hi, ${escapeHTML(profile.name)}</span><button class="profile-switch" id="switchProfileBtn">Switch</button>`;
+document.getElementById("switchProfileBtn").onclick=()=>{
+clickSound();
+document.getElementById("mainMenu").style.display="none";
+document.getElementById("loginName").value=profile.name;
+selectedAvatar=profile.avatar;
+renderAvatarPicker();
+document.getElementById("loginScreen").style.display="flex";
+};
+}
+
+
+/* =========================================================
+   SPLASH SCREEN → PROFILE (if needed) → MAIN MENU
+========================================================= */
+
+function showMainMenu(){
+
+const list=loadLibrary();
+
+if(!list.length){
+
+saveLibrary([{
+id:"mix_welcome",
+name:"Welcome Mix",
+code:WELCOME_CODE,
+updatedAt:Date.now()
+}]);
+
+}
+
+document.getElementById("mainMenu").style.display="block";
+
+renderProfileRow();
+renderMixList();
+
+}
+
+function finishSplash(){
+
+const splash=document.getElementById("splashScreen");
+
+splash.classList.add("fade-out");
+
+setTimeout(()=>{
+
+splash.style.display="none";
+
+if(loadProfile()){
+showMainMenu();
+}else{
+renderAvatarPicker();
+document.getElementById("loginScreen").style.display="flex";
+}
+
+},350);
+
+}
+
+(function runSplash(){
+
+const bar=document.getElementById("splashBar");
+const status=document.getElementById("splashStatus");
+
+const messages=[
+"Loading MIX runtime…",
+"Reading your mixes…",
+"Warming up the preview engine…",
+"Almost there…"
+];
+
+let progress=0;
+let msgIndex=0;
+
+status.textContent=messages[0];
+
+const interval=setInterval(()=>{
+
+progress+=Math.random()*18+10;
+
+if(progress>=100){
+
+progress=100;
+bar.style.width="100%";
+
+clearInterval(interval);
+
+setTimeout(finishSplash,250);
+
+return;
+
+}
+
+bar.style.width=progress+"%";
+
+msgIndex=Math.min(
+messages.length-1,
+Math.floor((progress/100)*messages.length)
+);
+
+status.textContent=messages[msgIndex];
+
+},160);
+
+})();
+
+
+/* =========================================================
+   SAVE
+========================================================= */
+
+document.getElementById("saveBtn").onclick=()=>{
+
+clickSound();
+
+FILE_TEMPLATES[currentFile]=code.value;
+
+saveCurrentProject();
+
+successSound();
+
+consoleLog("Project saved successfully.");
+
+showToast("✓ MIX project saved");
+
+};
+
+
+/* =========================================================
+   DOWNLOAD (current .mix source file)
+========================================================= */
+
+document.getElementById("downloadBtn").onclick=()=>{
+
+clickSound();
+
+const blob=new Blob([code.value],{type:"text/plain"});
+const url=URL.createObjectURL(blob);
+const a=document.createElement("a");
+
+a.href=url;
+a.download=currentFile;
+document.body.appendChild(a);
+a.click();
+a.remove();
+
+URL.revokeObjectURL(url);
+
+successSound();
+
+consoleLog(`${currentFile} downloaded.`);
+
+showToast(`📥 Downloaded ${currentFile}`);
+
+};
+
+
+/* =========================================================
+   PREVIEW — renders inline in an iframe inside the app,
+   so there is nothing for a browser popup blocker to catch.
+   An "Open Tab" link is offered too, as a direct <a> click
+   (which browsers treat as a real user gesture, unlike
+   window.open calls).
+========================================================= */
+
+function getCurrentProjectMeta(){
+
+if(!currentProjectId)return{type:"mix",renderMode:"2d"};
+
+const list=loadLibrary();
+const project=list.find(p=>p.id===currentProjectId);
+
+if(!project)return{type:"mix",renderMode:"2d"};
+
+return{type:project.type||"mix",renderMode:project.renderMode||"2d"};
+
+}
+
+function runPreview(){
+
+clickSound();
+
+const meta=getCurrentProjectMeta();
+
+const parsed=parseMixSource(code.value,getCustomSounds(),meta.renderMode);
+
+if(parsed.errors.length){
+
+parsed.errors.forEach(err=>console.warn(err));
+
+errorSound();
+
+consoleLog(
+`Preview built with ${parsed.errors.length} unrecognized line(s) — check the preview panel.`,
+"error"
+);
+
+}else{
+
+successSound();
+
+consoleLog(
+`Preview built: ${parsed.bodyParts.length} element(s), ${parsed.buttonCount} button(s).`
+);
+
+}
+
+const html=buildPreviewHTML(code.value,meta);
+
+document.getElementById("previewFrame").srcdoc=html;
+
+if(lastPreviewUrl){
+URL.revokeObjectURL(lastPreviewUrl);
+}
+
+const blob=new Blob([html],{type:"text/html"});
+lastPreviewUrl=URL.createObjectURL(blob);
+
+document.getElementById("previewOpenTab").href=lastPreviewUrl;
+
+openModal("previewModal");
+
+showToast(meta.renderMode==="3d"?"▶ Preview ready — if 3D doesn't load here, try Open Tab":"▶ Preview ready");
+
+}
+
+document.getElementById("previewBtn").onclick=runPreview;
+document.getElementById("bottomPreview").onclick=runPreview;
+
+document.getElementById("previewOpenTab").addEventListener("click",()=>{
+clickSound();
+});
+
+
+/* =========================================================
+   FORMAT — normalizes whitespace and blank lines
+========================================================= */
+
+document.getElementById("formatBtn").onclick=()=>{
+
+clickSound();
+
+const formatted=code.value
+.split("\n")
+.map(line=>line.replace(/\s+$/,""))
+.join("\n")
+.replace(/\n{3,}/g,"\n\n")
+.replace(/^\n+/,"")
+.replace(/\n+$/,"\n");
+
+code.value=formatted;
+
+updateEditor();
+
+successSound();
+
+consoleLog("Code formatted.");
+
+showToast("✨ Formatted");
+
+};
+
+
+/* =========================================================
+   NEW FILE
+========================================================= */
+
+function createNewFile(){
+
+clickSound();
+
+const name=prompt("New MIX file name:","untitled.mix");
+
+if(!name)return;
+
+const cleanName=name.trim().endsWith(".mix")
+?name.trim()
+:`${name.trim()}.mix`;
+
+FILE_TEMPLATES[currentFile]=code.value;
+
+FILE_TEMPLATES[cleanName]="change background color = #10131a\nsay New MIX file\n";
+
+currentFile=cleanName;
+
+code.value=FILE_TEMPLATES[cleanName];
+
+updateEditor();
+
+activeTabName.textContent=cleanName;
+
+document.querySelectorAll(".file").forEach(f=>
+f.classList.remove("active")
+);
+
+successSound();
+
+consoleLog(`Created ${cleanName}`);
+
+showToast(`＋ ${cleanName} created`);
+
+}
+
+document.getElementById("newBtn").onclick=createNewFile;
+
+document.getElementById("menuNew").onclick=()=>{
+menu.classList.remove("open");
+createNewFile();
+};
+
+</script>
+
+</body>
+</html>
